@@ -1,0 +1,201 @@
+\section{Background}
+Under the name "Depth Estimation" a lot of techniques appear, but there is no formal definition that considers them all.
+I would define "Depth Estimation" as the study of algorithms that process one or more images of a scene and output information about its geometry.
+There exist many approaches to do this as well as many problem settings.
+The setting of this thesis is \textit{Single Image Depth Estimation}, also called \textit{Monocular Depth Estimation}.
+It refers to a depth estimation problem based on only one image of the scene.
+
+As it is often the case in computer science, there is no such thing as the best algorithm for solving a given problem, rather there are several and each with its own advantages and disadvantages, some more successful than others.
+Brilliant minds have contributed to this field and in this chapter I will present some of their ideas.
+
+
+This is not mathematics, there aren't rigid formal definitions and formulas and symbols don't follow strict rules.
+Notation serves clarity.
+The treatment is informal though mathematically informed.
+
+
+\textbf{Images} are what we want to extract geometry informations from.
+Images are represented as two (gray images) or three (color images) dimensional arrays of limited positive numbers.
+Color images can be in turn represented in different color spaces.
+Images can be resized through sampling and interpolation.
+I will usually refer to an image using the letters $I$ and $J$.
+A pixel is a location on an image and is indexed using a pair of numbers $(i, j)$, sometimes written $ij$ or it can be indexed using a single letter like $i$ or $p$.
+For gray images the value of an image in a certain pixel is a single number, while for color images it is a triad of numbers corresponding to some color space representation, usually RGB.
+$I_{ij}$ denotes such values.
+$ij$ can be a non-integer pair of numbers, in such a case $I_{ij}$ will still make sense and a \textit{differentiable} sampling procedure is implied(usually the one used in \cite{STN}).
+
+
+\textbf{Depth maps} are often the output of depth estimation algorithms.
+A depth map is an image in which every pixel value represents a depth measure, meaning the distance from the image plane or, equivalently, the $Z$ coordinate of a point $\mathbf{x} = (X, Y, Z)$ in space, where $X$ and $Y$ corresponds to the image plane coordinates.
+Since only points in front of the camera are considered, $Z$ values are always strictly positive.
+I will usually refer to a depth map using the symbol $\mathbf{Z}$.
+$\mathbf{Z}$ can be a \textit{metric} depth map, meaning each pixel value represents a spatial distance expressed in absolute physical units (e.g. meters), or it can be a \textit{relative} depth map and only used for relative depth comparisons of pairs of pixel (e.g. which pixel is closer or farther).
+An important kind of a relative depth map is an \textit{affine} depth map, that is a depth map equals to the metric depth map of the scene up to an affine transformation: $\mathbf{Z}_{metric} = s \, \mathbf{Z}_{affine} + t$ for some $s, t$.
+
+Following an image formation model, in both images and depth maps every pixel value is determined by some property of a 3D scene location which I will denote as $\mathbf{x}$, be it distance, reflectance, color, texture, ...
+The camera acquiring the image has \textit{intrinsic} parameters describing its acquisition geomtry and \textit{extrinsic} ones refering to its position in space.
+Projective geometry is used for expressing camera and image geometry \cite{multiview}.
+I won't go into its details, suffice it to say that by knowing these parameters one is able to \textit{project} a 3D location $\mathbf{x}$ to the image plane and by knowing the distance(depth) $Z$ of such a point and its location $(i,j)$ in the image plane also the reverse is doable, namely \textit{backprojecting} the pixel to a 3D location.
+
+
+\textbf{Disparity maps} are a concept related to the so called \textit{stereo} or \textit{binocular} depth estimation where scene geometry must be infered from two images.
+Disparity maps will be indicated by $\mathbf{D}$. In order to understand what they are, assume there is an object in the scene at $\mathbf{x}$ and two identical cameras simulteneously take a picture from slightly different angles.
+The object location in the first image $(i_{1}, j_{1})$ will be different from its location in the second image $(i_{2}, j_{2}) $(imagine overlapping the two images).
+A displacement $d = (i_{2} - i_{1}, j_{2} - j_{1})$ is thus obtained.
+By knowing extrinsic and intrinsic parameters of the two cameras, depth $Z$ from the first camera corresponding to $(i_{1}, j_{1})$ can be computed by means of such displacement.
+
+Thus, for every pixel $(i, j)$ of the first image, by backprojecting it in 3D space and then projecting it on the second image a displacement $\mathbf{D}(i,j)$ can be computed.
+The mapping from pixel to displacement is called a disparity map, in this example we computed the disparity map of the first image w.r.t. the second.
+Analogously a disparity map can be computed for the second image w.r.t. the first.
+There exist pixels for which this procedure fails either because the projection of $\mathbf{x}$ onto the other image ends up out-of-view or because $\mathbf{x}$ is occluded from the other perspective and does not contribute to image formation.
+Hence disparity maps can have "holes" in which they are not defined.
+
+In the very simple setting of identical cameras put side to side (mounted on a \textit{stereo-rig}) pointing at parallel directions, the disparity $d$ is a one dimensional displacement and is represented by a single real number.
+This will be the case from here on. The obtained image pair is called \textit{rectified}.
+
+
+The problem of depth estimation is to design an algorithm that can reconstruct the geometry of a scene from $N$ images of it.
+A function $f$ is required such that $f(I_{1}, I_{2}, ..., I_{N})$ represents such geometry, usually as a depth map $\mathbf{Z}$ or disparity map $\mathbf{D}$, but other representations exist in particular when $N > 2$, i.e. \textit{multi-view} case.
+There exist surveys treating the problem for $N \geq 2$ \cite{correspondance, stereo}, but the focus of this thesis is the case $N = 1$, namely \textit{monocular} or \textit{single image} depth estimation.
+
+
+In the \textbf{deep learning} approach $f$ is called a $model$ and has \textit{trainable} parameters which must be tuned minimizing what is called a \textit{loss function} $\mathcal{L}$, that is: a quantity expressing some undesired property that $f$ mustn't satisfy.
+For it to be minimized during a first phase called \textit{training}, differentiability of $\mathcal{L}$ in the trainable parameters is required.
+This implies that $f$ itself should be differentiable in them.
+Algorithms based on gradient descent are employed for optimization.
+$\mathcal{L}$ is often expressed as a sum of other loss functions and so called \textit{regularization} terms which serve the overall training procedure, favouring the \textit{generalization} of the model.
+A model is said to generalize well when its predictions are reliable on new input data, i.e. not seen during training.
+This whole procedure is only possibile if a \textit{dataset} is given, that is a collection of data statistically defining the desired behaviour of $f$.
+It can be a set of input-output pairs, e.g. images and associated depth maps, or a more general data collection, e.g. video footage.
+The desired output of the model in response to a certain input is called \textit{ground-truth}.
+
+\textit{Testing} follows training.
+During the testing phase the model generalization capability is evaluated on new data using \textit{metrics} $\mathcal{M}$ which quantitatively express the \textit{error} the model is committing (like loss functions do, hence the smaller the better) or its \textit{accuracy} (the greater the better).
+In order to test a model a dataset containing ground-truth data is necessary so that the desired behaviour can be quantitatively compared with the actual behaviour.
+The output of a model is often called a \textit{prediction}, so metrics $\mathcal{M}$ are functions of both predictions and ground truth data.
+
+
+\textit{Statistical learning} is the predecessor of deep learning and it shares with it the same theoretical foundations, but it proved to be less effective.
+Deep learning efficacy is mainly due to its scalability in training, meaning that very large datasets can be used and the resulting optimization problem is computationally feasible for the existing hardware, although the costs are not always affordable.
+
+%During testing time all monocular depth estimation models are able to infer depth from a single image, however during training the kind of data they require can vary from tecnique to tecnique.
+%Chapter 2 treats these differences. In its "Supervised" section models trained on ground-truth data are presented, while in the "Self Supervised" one ground-truth is not necessary and data can be video footage or stereo pairs.
+%Instead in "Classic" techniques not necessarily based on deep learning(and hence on datasets) are reviewed.
+%
+%In this chapter some of the ideas developed for solving monocular depth estimation are reviewed.
+%The "Classic" section is about works that don't use what we'd call deep learning.
+%"Supervised" , "Self Supervised" and in particular "SOTA" are solely about deep learning techniques.
+%Datasets and metrics details are encapsulated in the "Datasets" and "Metrics" sections.
+%
+%
+%I won't spend too much time on neural network architectures and in particular on explaining numerical details and experiments.
+%If a method appears in this chapter it means that it was successful in its intent.
+%The scale of efficacy is Classic $<$ Self Supervised $<$ Supervised $<$ SOTA.
+
+
+\section{Models}
+In order to estimate a dense depth map $\mathbf{Z}$ from an RGB image $I$ architectures like UNet \cite{UNet} or DispNet \cite{DispNet}, which is in turn based on FlowNet \cite{FlowNet}, are used.
+They have an encoder-decoder structure with long range skip connections to avoid information loss during the encoding phase. 
+Older works \cite{Eigen} \cite{Eigen2} use modified classification networks like AlexNet \cite{AlexNet} or VGG \cite{VGG} using fully connected layers as upsamplers, this limits the resulting depth map resolution considerably.
+\cite{ResNet} as encoder backbone is more common \cite{MonoDepth2}.
+
+Encoder-decoder models are made to work at multiple scales by mapping intermediate feature maps from the decoder to depth maps at various scales.
+During training multi-scale outputs can be weighted favouring coarse-scale learning in early training stages and finer-scale later during training like in \cite{DispNet}.
+These intermediate mappings are realised via a linear or convolutional layer, but some authors also used graph convolutional networks \cite{GCNDepth}.
+
+
+Different approaches can be used in order to obtain a meaningful output.
+The output can be obtained by a linear operation, in this case the output values can be positive or negative and the output can be naturally interpreted as a disparity value or as a log depth value, although also considering it as a depth value is done \cite{Eigen}.
+In \cite{SfMLearner} the following activation function is applied to the output of the network for obtaining a depth map:
+\[
+	\mathbf{Z} = \frac{1}{\alpha * \sigma(x) + \beta}
+\]
+Where $\sigma$ is the sigmoid activation function, $\alpha=10$ and $\beta=0.01$.
+The resulting output depth range is approximately $(0.01, 100)$.
+
+Transformers.
+Markov Random Field, Conditional Random Fields, Neural Conditional Random Fields.
+
+\section{Datasets}
+Deep learning models learn the data distribution fed to them, e.g. if a model always receives car images during its training phase, then when an image without a car is presented to it, it will likely have the same output as putting a car in the middle of the image.
+Hence datasets characteristics must be described in order to understand the behaviour of models trained on them.
+The geometry of a scene is majorly affected by wether it is indoors or outdoors.
+There are datasets with only images from outdoor scenes \cite{KITTI} \cite{Cityscapes}, datasets with only images from indoor scenes \cite{NYUv2} and datasets with both.
+Illumination(day or night), resolution(HD, 4K, ...) and weather conditions(foggy, rainy, clear, ...) are other relevant factors.
+We say that a model operates \textit{into the wild} if it has been trained on images of unstructured environments, such datasets exist \cite{DIW} \cite{ReDWeb} \cite{Youtube3D} but they formulate depth estimation as a \textit{relative} depth estimation, i.e. knowing which pixels correspond to closer objects than others.
+
+During training phase different models have different requirements. Some need rectified stereo pairs, some need video sequences and some need single images. Particular works require more exotic datasets, for instance a CAD models dataset \cite{IM2CAD}.
+
+As it can be noted, depth estimation is an heterogeneous field.
+
+The main datasets used for benchmarking monocular depth estimation techniques are \texttt{KITTI} \cite{KITTI}, \texttt{NYUv2} \cite{NYUv2} and \texttt{Cityscapes} \cite{Cityscapes}.
+
+\section{Metrics}
+
+For quantifying the performance of depth estimation algorithms various metrics are used in the literature.
+Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and its corresponding groudtruth depth map $\mathbf{Z}_{gt}$, these metrics are defined as follows:
+
+\begin{table}
+\centering
+\begin{tabulary}{\textwidth}{lL}
+\toprule
+    \emph{Name} & \emph{Expression} \\
+\midrule
+    \textit{Mean Absolute Relative Error} & $\text{mean}_{i \in \mathbf{Z}_{pred}} \frac {\big| \mathbf{Z}_{gt, i} - \mathbf{Z}_{pred, i} \big|} {\mathbf{Z}_{gt, i}}$ \\
+    \textit{Mean Squared Relative Error}  & $\text{mean}_{i \in \mathbf{Z}_{pred}} \frac {\left( \mathbf{Z}_{gt, i} - \mathbf{Z}_{pred, i} \right)^{2}} {\mathbf{Z}_{gt, i}}$ \\
+    \textit{Root Mean Squared Error} & $\sqrt{
+        \text{mean}_{i \in \mathbf{Z}_{pred}} \left( \mathbf{Z}_{gt, i} - \mathbf{Z}_{pred, i} \right)^{2}
+    }$ \\
+    \textit{Root Mean Squared Logarithmic Error} & $\sqrt{
+        \text{mean}_{i \in \mathbf{Z}_{pred}} \left( log \, \mathbf{Z}_{gt, i} - log \, \mathbf{Z}_{pred, i} \right)^{2}
+    }$ \\
+    \textit{Accuracy with respect to a threshold} & $\% \text{ of pixels } i \text{ s.t. } max(
+		\frac{\mathbf{Z}_{gt, i}}{\mathbf{Z}_{pred, i}},
+		\frac{\mathbf{Z}_{pred, i}}{\mathbf{Z}_{gt, i}}
+	) < \text{threshold}$ \\
+\bottomrule
+\end{tabulary}
+\caption[Frequently used metrics]{
+    Frequently used metrics in depth estimation literature.
+    Common thresholds for the last one are $1.25$, $1.25^{2}$ and $1.25^{3}$
+    \label{t:metrics}
+}
+\end{table}
+
+When computing these metrics, not all pixels are considered and some processing is usually performed to mitigate certain problems.
+For instance, LIDAR ground truth depth maps are often sparse, so $\mathbf{Z}_{gt,i }$ is not defined for all pixels $i$. and it is common practice to mask out reflective and transparent surfaces as in \cite{Eigen} for their ground truth labels are likely to be invalid.
+Some authors also clamp the predicted depth maps \cite{Garg} to the ground truth depth range or mask out ground truth pixels corresponding to depth values above a certain threshold \cite{evalStudy}.
+Moreover, models have diverse kind of outputs and output resolutions.
+Some models output disparity maps, other depth maps.
+Evaluating a given model on a certain dataset requires converting the model output format and output resolution to be compatible with the ones from the dataset ground truth data.
+The resizing step involves interpolation, which can bias the model performance when the predictions are particularly small w.r.t. the ground truth data resolution \cite{evalStudy}.
+Furthermore, not every dataset provides camera intrinsics per image which are required for converting disparity maps to depth maps and some models are tuned on specific camera configurations.
+This leads to an another important matter: monocular depth estimation models do not have absolute geometric references to produce depth maps with the correct scale, unlike binocular depth estimation models.
+This last issue particularly affects self-supervised models.
+Eigen et al. \cite{Eigen} introduced a \textit{Scale-Invariant Error} upon which they also modeled their training loss, they observed that correcting for the mean log depth of each prediction substituting it with the corresponding ground truth one leads to a 20\% relative improvement in performance.
+Their \textit{Scale-Invariant Error} is invariant to scale in the sense that by pixelsiwe multiplying a prediction or a ground truth depth map for a positive value the corresponding error remains unchanged.
+\[
+	\textit{Scale-Invariant Error} =
+		\text{mean}_{i,j \in \mathbf{Z}_{pred}}
+		(
+			( log \, \mathbf{Z}_{pred,  i} - log \, \mathbf{Z}_{pred,  j}) -
+			( log \, \mathbf{Z}_{gt,  i } - log \, \mathbf{Z}_{gt,  j})
+		)^{2}
+\]
+In \cite{SfMLearner} Zhou et al. scale each prediction $\mathbf{Z}_{pred}$ of their model by $\frac{\text{median}(\mathbf{Z}_{gt})}{\text{median}(\mathbf{Z}_{pred})}$ so to obtain an evaluation independent of scale also for the other metrics.
+Also Godard et al. follow this approach in \cite{MonoDepth2}, but they make the scaling factor equal across all images by taking the mean of all the median scales both for predictions and ground truth observations:
+\[
+	\frac{
+		\text{mean}_{\mathbf{Z}_{gt}} (\text{median} ( \mathbf{Z}_{gt}))
+	}{
+		\text{mean}_{\mathbf{Z}_{pred}} (\text{median} ( \mathbf{Z}_{pred}))
+	}
+\]
+They argue that adapting the depth distribution with a scaling factor defined per image hides large scale variations in the predicted depth maps, which is undesirable if one wants to apply the model to a sequence of images, in which there must be scale temporal consistency.
+As discussed in \cite{evalStudy}, these processing steps affect in different ways the resulting metrics.
+The same authors also observe that higher quantitative performance doesn't necessarily imply better qualitative appearance.
+In \cite{monocular2024} it is noted that a specifically designed metric that satisfies the need of the depth estimastion task has not been established yet and reasearchers in this field are still searching for new alternatives.
+
+
+%\section{Classic}
+

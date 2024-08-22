@@ -9,7 +9,7 @@
 \usepackage[english]{babel}
 
 %\usepackage[latin9]{inputenc}
-\usepackage[latin1]{inputenc}
+%\usepackage[latin1]{inputenc}
 \usepackage{lmodern} % Latin Modern font
 \usepackage[T1]{fontenc}
 
@@ -57,8 +57,9 @@
 \usepackage{afterpage}
 
 \usepackage{gensymb}
-\usepackage{wasysym}
+%\usepackage{wasysym}
 \usepackage{amsfonts}
+\usepackage{amsmath}
 \usepackage{graphicx}
 
 \usepackage{verbatim}
