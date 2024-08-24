@@ -1,28 +1,19 @@
 
 \section{Self Supervised}
-There's a line of research tackling monocular depth estimation from a self-supervised learning approach. Well studied geometric relations implicitly constrain depth maps of subsequent frames in videos or in stereo pairs making it suitable to define self-supervised losses for training, i.e. not dependent on ground truth depth maps.\\
+There's a line of research tackling monocular depth estimation from a self-supervised learning approach.
+Well studied geometric relations implicitly constrain depth maps of subsequent frames in videos or in stereo pairs making it suitable to define self-supervised losses for training, i.e. not dependent on ground truth depth maps.
 
-\begin{tikzpicture}
-\node{Garg}
-	child{node{MonoDepth}
-		child{node{SfMLearner}
-			child{node{struct2depth}}
-			 child{node{FeatDepth}}
-			child{node{vid2depth}}
-		}
-		child{node{MonoDepth2}}
-};
-\end{tikzpicture}
-
-Garg et al. \cite{Garg} rely on having rectified stereo footage with known baseline and camera parameters. Given a stereo pair $I_{l}, I_{r}$ they feed $I_{l}$ to their depth estimation network which returns an estimate of its depth map $\hat{\rho}_{l}$. After converting $\hat{\rho}_{l}$ to a disparity map $\hat{d}_{l}$, this can be used to reconstruct the left image using the following formula: $\hat{I}_{l} (i) = I_{r} (i + \hat{d}_{l, i})$, for all pixels $i$. A first order approximation of its gradient is provided through an iterative algorithm. The loss to be minimized is the reconstruction error between $\hat{I}_{l}$ and $I_{l}$, Garg et al. define it as a mean squared error:
+Garg et al. \cite{Garg} rely on having rectified stereo footage with known baseline and camera parameters.
+Given a stereo pair $I_{l}, I_{r}$ they feed $I_{l}$ to their depth estimation network which returns an estimate of its depth map $\hat{\rho}_{l}$.
+After converting $\hat{\rho}_{l}$ to a disparity map $\hat{d}_{l}$, this can be used to reconstruct the left image using the following formula: $\hat{I}_{l} (i) = I_{r} (i + \hat{d}_{l, i})$, for all pixels $i$. A first order approximation of its gradient is provided through an iterative algorithm.
+The loss to be minimized is the reconstruction error between $\hat{I}_{l}$ and $I_{l}$, Garg et al. define it as a mean squared error:
 \[
 	\mathcal{L}_{rec} = \text{mean}_{i \in \hat{I}_{l}} \big\| \hat{I}_{l}(i) - I_{l}(i) \big\|^{2}
 \]
-The authors also employ a regularization term that smoothes the resulting disparity maps:
+The authors also employ a regularization term that smoothness the resulting disparity maps:
 \[
 	\mathcal{L}_{smooth} = \text{mean}_{i \in \hat{I}_{l}} \big\| \nabla \hat{d}_{l} (i) \big\|^{2}
 \]
-\\
 
 
 Godard et al. \cite{MonoDepth} builds upon the work of Garg et al. \cite{Garg}. Their method is called MonoDepth and  Their idea is simple and is the starting point of this whole research line: predict the disparity map of one of the two binocular images and use it to reconstruct the other image, the quality of the reconstruction is the target of the optimization. But the devil is in the details, which now follow.\\

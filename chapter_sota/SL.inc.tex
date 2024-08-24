@@ -272,7 +272,7 @@ Hence, assuming depth values range between $Z_{\text{min}}$ and $Z_{\text{max}}$
 % prediction pipeline
 The first stage of their method computes for each pixel the probability that its depth falls within a certain bin: if $\mathbf{Z}_{gt}$ is the ground-truth depth map, for each pixel $(i,j) \in \mathbf{Z}_{gt}$ they give an estimate $\hat{p}$ of:
 \[
-	\mathbf{P}_{b}(i,j) := \text{prob} \, \{\mathbf{Z}_{gt}(i,j) \text{ is between } Z_{b} \text{ and } Z_{b+1}\} \quad b = 0, 1, \dotsc, B-1
+	\mathbf{P}_{b}(i,j) := \mathbb{P} \, \{\mathbf{Z}_{gt}(i,j) \text{ is between } Z_{b} \text{ and } Z_{b+1}\} \quad b = 0, 1, \dotsc, B-1
 \]
 This is achieved by a ResNet \cite{ResNet} backbone trained to output a probability map $\hat{\mathbf{P}}$ of size $W \times H \times B$ with as many channels as bins and a resolution reduced by a factor of 8 w.r.t. the initial image $I$ of size $W \times H \times 3$ taken as input.
 This is then up-sampled by means of bilinear interpolation to the image size.
@@ -321,7 +321,7 @@ This sums up \cite{depth_as_classification}.
 Fu et al. \cite{ordinal_regression} continue this line of research by adopting a slightly different approach which proved more effective.
 They formulate depth estimation as an \textit{ordinal regression} problem.
 The formal setting is very similar to the one of Cao et al., I will now illustrate the differences.
-First, their method is end-to-end as shown in the image \ref{fig:Fu_ordinal} and the architecture is quite intricate, refer to the paper \cite{ordinal_regression} for details.
+First, their method is end-to-end as shown in the image \ref{fig:Fu_ordinal}.
 
 % architecture
 \begin{figure}
@@ -332,7 +332,7 @@ First, their method is end-to-end as shown in the image \ref{fig:Fu_ordinal} and
 
 Second, a more sophisticated architecture estimates $\hat{\mathbf{P}}$ from $I$, and it is composed of different modules, some working in parallel and some in serial.
 They use dilated convolutions for enlarging the field of view without decreasing spatial resolution or increasing number of parameters \cite{ordinal_regression} and $1 \times 1$ convolutions for cross-channel interactions \cite{ordinal_regression}.
-Third, they interpret $\mathbf{P}_{b}(i,j)$ as $\text{prob} \, \{ \mathbf{Z}_{gt}(i,j) < \mathbf{Z}_{b+1} \}$, namely the probability that the pixel $(i,j)$ corresponds to a point that doesn't fall farther than the $b$-th depth bin.
+Third, they interpret $\mathbf{P}_{b}(i,j)$ as $\mathbb{P} \, \{ \mathbf{Z}_{gt}(i,j) < Z_{b+1} \}$, namely the probability that the pixel $(i,j)$ corresponds to a point that doesn't fall farther than the $b$-th depth bin.
 If a pixel $(i,j)$ corresponds to bin $\mathbf{L}_{gt}(i,j)$ then $\hat{\mathbf{P}}_{b}(i,j)$ must be maximized for $b \leq \mathbf{L}_{gt}(i,j)$ and minimized for $b > \mathbf{L}_{gt}(i,j)$, hence the following loss function:
 \[
 	\mathcal{L} = - \mathop{\text{mean}}_{(i,j) \in \mathbf{L}} \left(
@@ -342,7 +342,7 @@ If a pixel $(i,j)$ corresponds to bin $\mathbf{L}_{gt}(i,j)$ then $\hat{\mathbf{
 \]
 The predicted label map $\mathbf{L}_{pred}$ is defined as:
 \[
-	\mathbf{L}_{pred}(i,j) := \# \{b \, \text{ such that } \, \hat{p}_{b}(i,j) > 0.5\}
+	\mathbf{L}_{pred}(i,j) := \# \{b \, \text{ such that } \, \hat{\mathbf{P}}_{b}(i,j) > 0.5\}
 \]
 Ideally $\hat{p}_{b}(i) > 0.5$ for $b \leq \mathbf{L}_{gt}(i,j)$ and $\hat{p}_{b}(i,j) \leq 0.5$ for $b > \mathbf{L}_{gt}(i,j)$, so that $\mathbf{L}_{pred}(i,j) = \mathbf{L}_{gt}(i,j)$.
 In case $\hat{p}_{b}(i,j)$ is above $0.5$ for every $b$, $(i,j)$ can be considered at a depth outside the range $\mathbf{Z}_{\text{min}}$, $\mathbf{Z}_{\text{max}}$, e.g. it can correspond to a point at $\infty$ depth like the sky.
@@ -383,9 +383,9 @@ For this final step global information is exploited again: $\mathbf{F}$ (which h
 Finally, depth can be estimated.
 To avoid discretization artifacts they compute the depth as the following linear combination:
 \[
-	\mathbf{Z}_{pred}(i,j) := \sum_{b=0}^{B-1} \hat{p}_{b}(i,j) \, c_{b}
+	\mathbf{Z}_{pred}(i,j) := \sum_{b=0}^{B-1} \hat{\mathbf{P}}_{b}(i,j) \, c_{b}
 \]
-Therefore, in this work, $\hat{p}_{b}(i,j)$ can be interpreted as an approximation to the p.d.f. of the pixel-wise depth distribution.
+Therefore, in this work, $\hat{\mathbf{p}}_{b}(i,j)$ can be interpreted as an approximation to the p.d.f. of the pixel-wise depth distribution.
 
 Other than optimizing the depth map obtained, also the bins need to be optimized.
 For the former Bhat et al. use a Scale-Invariant loss \cite{Eigen}, for the latter they adopt the following:
@@ -400,19 +400,27 @@ This loss, called "bidirectional Chamfer Loss" \cite{AdaBins}, encourages the bi
 %              ZoeDepth
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Bhat et al. \cite{ZoeDepth} refine their ideas computing depth bins pixel-wise.
-The result is a two-stage method for estimating both relative and metric depth.
+The result is a two-stage method for estimating both relative and metric depth \ref{fig:zoe_depth}.
+
+% architecture
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{figs/zoe_depth}
+	\caption{Bhat et al. architecture \cite{ZoeDepth}. \label{fig:zoe_depth}}
+\end{figure}
+
 They use the multi-dataset training procedure of \cite{MiDas} and the general encoder-decoder architecture for estimating relative depth maps is taken from \cite{denseViT}.
-To the decoder they attach a head which they call "Metric Bins Module" for converting relative depth maps into metric depth maps.
+To the decoder they attach a head, which they call "Metric Bins Module", for converting relative depth maps into metric depth maps.
 Therefore, when training on relative depth datasets only the decoder output is used, whilst when training on metric depth datasets the output of the head is considered.
 The Metric Bins Module works at multiple scales: given the lowest scale relative depth map returned by the decoder, a point-wise convolution estimates $B$ bin centers $\{c_{0}, c_{1}, \dotsc, c_{B-1}\}$ pixel-wise, then at successive finer scales other point-wise convolutions return $K$ "attractors" $\{a_{1}, a_{2}, \dotsc, a_{K}\}$, which serve the purpose to modify the previously computed bin distribution by computing an adjustment $\triangle c_{b}$ for each bin center:
 \[
 	\triangle c_{b} := \sum_{k=1}^{K} \frac{a_{k} - c_{b}}{1 + \alpha | a_{k} - c_{b} |^{\gamma}}
 \]
 How to convert a set of pixel-wise depths $\{c_{0}, c_{1}, \dotsc, c_{B}\}$ to a single value?
-They assign to each bin a probability $\hat{p}_{i}$ so that the resulting depth value is:
+They assign to each bin a probability $\hat{\mathbf{p}}_{i}$ so that the resulting depth value is:
 \[
 	\mathbf{Z} = \sum_{i=0}^{B-1} \hat{p}_{b} \, c_{b}
 \]
-In this formula bins are ordered and to make sure not to obtain a difficult to interpret multi-modal probability distributions, they build $\{\hat{p}_{b}\}_{b=0}^{B-1}$ using the binomial distribution. Hence instead of predicting the actual probability values, binomial distribution parameters are computed.
-To make things numerically stable they employ some more trickery which I won't report.
+In this formula bins are ordered and to make sure not to obtain a difficult to interpret multi-modal probability distributions, they build $\{\hat{\mathbf{P}}_{b}\}_{b=0}^{B-1}$ using the binomial distribution. Hence instead of predicting the actual probability values, binomial distribution parameters are computed.
+To make things numerically stable they employ some more trickery I won't report.
 The page with their code is \url{https://github.com/isl-org/ZoeDepth}.
