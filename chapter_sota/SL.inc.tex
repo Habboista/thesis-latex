@@ -31,22 +31,22 @@ $\mathcal{S}_{1}$ uses AlexNet \cite{AlexNet} as backbone for features encoding 
 \end{figure}
 
 % comments
-The networks predict in the \textit{log-scale}, i.e. if $I$ is an input RGB image and $\mathbf{Z}_{pred}$ is its depth estimate, it can be written:
+The networks predict in the \textit{log-scale}, i.e. if $I$ is an input RGB image and $\mathbf{Z}$ is its depth estimate, it can be written:
 \begin{equation}
 	\begin{split}
-	\text{log} \, \mathbf{Z}_{coarse} & := \mathcal{S}_{1}(I) \\
-	\text{log} \, \mathbf{Z}_{pred} & := \mathcal{S}_{2}(I, \, \text{log} \, \mathbf{Z}_{coarse})
+	\text{log} \, \mathbf{Z}_{coarse} & = \mathcal{S}_{1}(I) \\
+	\text{log} \, \mathbf{Z} & = \mathcal{S}_{2}(I, \, \text{log} \, \mathbf{Z}_{coarse})
 	\end{split}
 \end{equation}
 
 % loss
 Their network is trained using a scale-invariant loss function:
 \[
-	\delta(i,j) := \text{log} \, \mathbf{Z}_{gt} (i,j) - \text{log} \, \mathbf{Z}_{pred} (i,j)
+	\delta(i, j) = \text{log} \, \mathbf{Z}^{*} (i, j) - \text{log} \, \mathbf{Z} (i, j)
 \]\[
 	\mathcal{L}_{scale-invariant} =
-	\mathop{\text{mean}}_{(i,j) \in \mathbf{Z}_{gt}} \left( \delta(i,j) \right)^{2} \quad +\quad
-	\lambda \left( \mathop{\text{mean}}_{(i,j) \in \mathbf{Z}_{gt}} \delta(i,j) \right) ^{2}
+	\mathop{\text{mean}}_{(i, j) \in \mathbf{Z}^{*}} \left( \delta(i, j) \right)^{2} \quad +\quad
+	\lambda \left( \mathop{\text{mean}}_{(i, j) \in \mathbf{Z}^{*}} \delta(i, j) \right) ^{2}
 \]
 $\lambda$ is a hyper-parameter that regulates the "scale invariace" of the loss: $\lambda$ set to $0$ reduces $\mathcal{L}_{scale-invariant}$ to a pixel-wise $l^{2}$ loss, $\lambda$ set to $1$ results in the Scale-Invariant Error exactly (introduced in "Metrics" section).
 Eigen et al. opt for $\lambda = 0.5$, finding it a good compromise.
@@ -65,22 +65,22 @@ Conversely, if a pure scale-invariant loss is used, the networks don't learn the
 Eigen et al. \cite{Eigen2} improve their previous work \cite{Eigen} by adding a third network $\mathcal{S}_{3}$ ("Scale 3" in \ref{fig:Eigen2}) working on a third finer scale and by substituting the $\mathcal{S}_{1}$ backbone with the larger VGG \cite{VGG}.
 The new method has still two stages: the first composed of $\mathcal{S}_{1}$ and $\mathcal{S}_{2}$ and the second is just $\mathcal{S}_{3}$:
 \[
-	\text{log} \, \mathbf{Z}_{coarse} := \mathcal{S}_{2}(I, \, \mathcal{S}_{1}(I))
+	\text{log} \, \mathbf{Z}_{coarse} = \mathcal{S}_{2}(I, \, \mathcal{S}_{1}(I))
 \]\[
-	\text{log} \, \mathbf{Z}_{pred} := \mathcal{S}_{3}(I, \, \text{log} \, \mathbf{Z}_{coarse})
+	\text{log} \, \mathbf{Z} = \mathcal{S}_{3}(I, \, \text{log} \, \mathbf{Z}_{coarse})
 \]
 
 % regularization
 They train their architecture using the same Scale-Invariant loss, but a regularization term is added:
 \begin{equation}
 \begin{split}
-	\mathcal{L}_{reg} & = \mathop{\text{mean}}_{(i,j) \in \mathbf{Z}_{gt}}
+	\mathcal{L}_{reg} & = \mathop{\text{mean}}_{(i, j) \in \mathbf{Z}^{*}}
 		\big\|
-			\nabla \delta(i,j)
+			\nabla \delta(i, j)
 		\big\|_{2}^{2} \\
-	& = \mathop{\text{mean}}_{(i,j) \in \mathbf{Z}_{gt}}
+	& = \mathop{\text{mean}}_{(i, j) \in \mathbf{Z}^{*}}
 		\big\|
-			\nabla \text{log} \, \mathbf{Z}_{gt} (i,j) - \nabla \text{log} \, \mathbf{Z}_{pred} (i,j)
+			\nabla \text{log} \, \mathbf{Z}^{*} (i, j) - \nabla \text{log} \, \mathbf{Z} (i, j)
 		\big\|_{2}^{2}
 \end{split}
 \end{equation}
@@ -104,14 +104,14 @@ One difference is that Laina et al. network regresses the depth map in linear-sc
 % loss
 For training their network they use the reverse Huber loss (berHu):
 \begin{equation}
-	\mathcal{B}(x) := 
+	\mathcal{B}(x) = 
 	\begin{cases}
 		|x| & \text{if } |x| \leq c \\
 		\frac{x^{2} + c^{2}}{2c} & \text{if } |x| > c
 	\end{cases}
 \end{equation}
 \[
-	\mathcal{L}_{berHu} := \mathop{\text{mean}}_{(i,j) \in \mathbf{Z}_{gt}} \mathcal{B}(\mathbf{Z}_{pred}(i,j) - \mathbf{Z}_{gt}(i,j))
+	\mathcal{L}_{berHu} = \mathop{\text{mean}}_{(i, j) \in \mathbf{Z}^{*}} \mathcal{B}(\mathbf{Z}(i, j) - \mathbf{Z}^{*}(i, j))
 \]
 $\mathcal{B}$ is formulated in such a way that it is continuous and differentiable.
 It behaves like an $l^{1}$ loss function in $[-c, c]$ and like an $l^{2}$ loss function outside that interval.
@@ -119,10 +119,10 @@ Laina et al. define $c$ batch-wise so that it is 20\% of the maximal per-batch e
 \[
 	c = \frac{1}{5} \mathop{\text{max}}_{
 		\substack{
-			(\mathbf{Z}_{pred}, \mathbf{Z}_{gt}) \in \text{batch} \\
-			(i,j) \in \mathbf{Z}_{gt}
+			(\mathbf{Z}, \mathbf{Z}^{*}) \in \text{batch} \\
+			(i, j) \in \mathbf{Z}^{*}
 		}
-	} \big| \mathbf{Z}_{pred}(i,j) - \mathbf{Z}_{gt}(i,j) \big|
+	} \big| \mathbf{Z}(i, j) - \mathbf{Z}^{*}(i, j) \big|
 \]
 This is just an empirical heuristic they tuned, other choices for $c$ are also possible.
 The authors motivate this loss function by noticing that depth values follow a heavy-tailed distribution (e.g. a log-normal distribution) and berHu loss is thus better suited considering that they work in linear-scale.
@@ -147,37 +147,37 @@ They take it from other authors and modify it using Inception blocks \cite{Incep
 
 % comments
 As they point out, their training method is not architecture-dependent and therefore other choices can be made.
-The important thing is that their network outputs a depth map $\mathbf{Z}_{pred}$ of its input image, this depth map is to be rather interpreted as \textit{relative}, meaning that it can be \textit{only} used for comparing depths between pairs of pixels.
-For instance if $\mathbf{p_{1}}$ and $(k,l)$ are two pixels, $\mathbf{Z}_{pred}(i,j) > \mathbf{Z}_{pred}(k,l)$ implies that $\mathbf{Z}_{gt}(i,j) > \mathbf{Z}_{gt}(k,l)$.
+The important thing is that their network outputs a depth map $\mathbf{Z}$ of its input image, this depth map is to be rather interpreted as \textit{relative}, meaning that it can be \textit{only} used for comparing depths between pairs of pixels.
+For instance if $\mathbf{p_{1}}$ and $(k,l)$ are two pixels, $\mathbf{Z}(i, j) > \mathbf{Z}(k,l)$ implies that $\mathbf{Z}^{*}(i, j) > \mathbf{Z}^{*}(k,l)$.
 Formally a relative depth map equals its metric depth map up to a pixel-wise monotonic transformation\footnote{For this reason, relative depth maps are not expressed in a specified scale, unlike metric depth map which can be expressed in linear-scale, log-scale, ...}.
 
 % loss
 For training such a network they employ a \textit{ranking loss} which encourages pairs of pixels to be ordered in a certain way.
 Hence, they sample $K$ pairs of pixels from the ground-truth metric depth map and based on their relative depth adjust the predicted relative depth map in those locations:
 \[
-	\mathcal{L}_{ranking} := \mathop{\text{mean}}_{
+	\mathcal{L}_{ranking} = \mathop{\text{mean}}_{
 		\substack{
 			\text{sample } K \text{ pairs}\\
-			 \mathbf{p}_{1} \neq \mathbf{p}_{2} \in \mathbf{Z}_{gt}}
+			 \mathbf{p}^{*}_{1} \neq \mathbf{p}^{*}_{2} \in \mathbf{Z}^{*}}
 		}
 	\begin{cases}
-		\text{log} \, ( 1 + \text{exp} \, ( \mathbf{Z}_{pred}(\mathbf{p}_{1}) - \mathbf{Z}_{pred}(\mathbf{p}_{2}) )) &
-			\text{if } \mathbf{Z}_{gt}(\mathbf{p}_{1}) \ll \mathbf{Z}_{gt}(\mathbf{p}_{2}) \\
-		\text{log} \, ( 1 + \text{exp} \, ( \mathbf{Z}_{pred}(\mathbf{p}_{2}) - \mathbf{Z}_{pred}(\mathbf{p}_{1}) )) &
-			\text{if } \mathbf{Z}_{gt}(\mathbf{p}_{2}) \ll \mathbf{Z}_{gt}(\mathbf{p}_{1}) \\
-		(\mathbf{Z}_{pred}(\mathbf{p}_{1}) - \mathbf{Z}_{pred}(\mathbf{p}_{2}) )^{2} &
-			\text{if } \mathbf{Z}_{gt}(\mathbf{p}_{1}) \approx \mathbf{Z}_{gt}(\mathbf{p}_{2})
+		\text{log} \, ( 1 + \text{exp} \, ( \mathbf{Z}(\mathbf{p}^{*}_{1}) - \mathbf{Z}(\mathbf{p}^{*}_{2}) )) &
+			\text{if } \mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) \ll \mathbf{Z}^{*}(\mathbf{p}^{*}_{2}) \\
+		\text{log} \, ( 1 + \text{exp} \, ( \mathbf{Z}(\mathbf{p}^{*}_{2}) - \mathbf{Z}(\mathbf{p}^{*}_{1}) )) &
+			\text{if } \mathbf{Z}^{*}(\mathbf{p}^{*}_{2}) \ll \mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) \\
+		(\mathbf{Z}(\mathbf{p}^{*}_{1}) - \mathbf{Z}(\mathbf{p}^{*}_{2}) )^{2} &
+			\text{if } \mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) \approx \mathbf{Z}^{*}(\mathbf{p}^{*}_{2})
 	\end{cases}
 \]
-For deciding whether $\mathbf{Z}_{gt}(\mathbf{p}_{1})$ and  $\mathbf{Z}_{gt}(\mathbf{p}_{2})$ are $\ll$, $\gg$ or $\approx$ they use a dataset-dependent threshold $\tau$:
+For deciding whether $\mathbf{Z}^{*}(\mathbf{p}^{*}_{1})$ and  $\mathbf{Z}^{*}(\mathbf{p}^{*}_{2})$ are $\ll$, $\gg$ or $\approx$ they use a dataset-dependent threshold $\tau$:
 
 \begin{align*}
-	\mathbf{Z}_{gt}(\mathbf{p}_{1}) & \ll \mathbf{Z}_{gt}(\mathbf{p}_{2}) \quad
-		\text{if } \mathbf{Z}_{gt}(\mathbf{p}_{1}) < \mathbf{Z}_{gt}(\mathbf{p}_{2}) - \tau\\
-	\mathbf{Z}_{gt}(\mathbf{p}_{1}) & \gg \mathbf{Z}_{gt}(\mathbf{p}_{2}) \quad
-		\text{if } \mathbf{Z}_{gt}(\mathbf{p}_{1}) > \mathbf{Z}_{gt}(\mathbf{p}_{2}) + \tau\\
-	\mathbf{Z}_{gt}(\mathbf{p}_{1}) & \approx \mathbf{Z}_{gt}(\mathbf{p}_{2}) \quad
-		\text{if } |\mathbf{Z}_{gt}(\mathbf{p}_{1}) - \mathbf{Z}_{gt}(\mathbf{p}_{2})| \leq \tau
+	\mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) & \ll \mathbf{Z}^{*}(\mathbf{p}^{*}_{2}) \quad
+		\text{if } \mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) < \mathbf{Z}^{*}(\mathbf{p}^{*}_{2}) - \tau\\
+	\mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) & \gg \mathbf{Z}^{*}(\mathbf{p}^{*}_{2}) \quad
+		\text{if } \mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) > \mathbf{Z}^{*}(\mathbf{p}^{*}_{2}) + \tau\\
+	\mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) & \approx \mathbf{Z}^{*}(\mathbf{p}^{*}_{2}) \quad
+		\text{if } |\mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) - \mathbf{Z}^{*}(\mathbf{p}^{*}_{2})| \leq \tau
 \end{align*}
 
 It's very unlikely that two distinct pixels share the same identical depth value, thus the equality definition must be relaxed.
@@ -221,9 +221,11 @@ Transformers have been known to better scale with dataset size than CNN based ar
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Bin Methods}
-Instead of regressing continuous depth values, these methods estimate discrete depth.
+Instead of regressing continuous depth values, these methods discretize the depth range and work with bins.
 The discretization of depth range can be global and fixed \cite{depth_as_classification, ordinal_regression}, global but dependent on the image \cite{AdaBins}, local and dependent on the single pixel \cite{ZoeDepth}.
+When probabilities (or scores, depending on the interpretation) are assigned to each bin, a depth value is actually computed which can eventually space in the whole range considered.
 Find a summary in \ref{table:2}.
 
 % summary table
@@ -247,6 +249,7 @@ Find a summary in \ref{table:2}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %        Depth as Classification
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 Cao et al. \cite{depth_as_classification} formulate depth estimation as a pixel-wise classification task proposing a two-stage method.
 Their idea is to discretize depth dividing its range into uniform bins.
 The overall pipeline is illustrated in figure \ref{fig:depth_as_classification}
@@ -254,7 +257,7 @@ The overall pipeline is illustrated in figure \ref{fig:depth_as_classification}
 % architecture
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.5]{figs/depth_classification}
+	\includegraphics[scale=0.35]{figs/depth_classification}
 	\caption{Cao et al. architecture \cite{depth_as_classification}. \label{fig:depth_as_classification}}
 \end{figure}
 
@@ -270,34 +273,34 @@ Hence, assuming depth values range between $Z_{\text{min}}$ and $Z_{\text{max}}$
 \]
 
 % prediction pipeline
-The first stage of their method computes for each pixel the probability that its depth falls within a certain bin: if $\mathbf{Z}_{gt}$ is the ground-truth depth map, for each pixel $(i,j) \in \mathbf{Z}_{gt}$ they give an estimate $\hat{p}$ of:
+The first stage of their method computes for each pixel the probability that its depth falls within a certain bin: if $\mathbf{Z}^{*}$ is the ground-truth depth map, for each pixel $(i, j) \in \mathbf{Z}^{*}$ they give an estimate of:
 \[
-	\mathbf{P}_{b}(i,j) := \mathbb{P} \, \{\mathbf{Z}_{gt}(i,j) \text{ is between } Z_{b} \text{ and } Z_{b+1}\} \quad b = 0, 1, \dotsc, B-1
+	\mathbf{P}^{*}_{b}(i, j) = \mathbb{P} \, \{\mathbf{Z}^{*}(i, j) \text{ is between } Z_{b} \text{ and } Z_{b+1}\} \quad b = 0, 1, \dotsc, B-1
 \]
-This is achieved by a ResNet \cite{ResNet} backbone trained to output a probability map $\hat{\mathbf{P}}$ of size $W \times H \times B$ with as many channels as bins and a resolution reduced by a factor of 8 w.r.t. the initial image $I$ of size $W \times H \times 3$ taken as input.
+This is achieved by a ResNet \cite{ResNet} backbone trained to output a probability map $\mathbf{P}$ of size $W \times H \times B$ with as many channels as bins and a resolution reduced by a factor of 8 w.r.t. the initial image $\mathbf{I}$ of size $W \times H \times 3$ taken as input.
 This is then up-sampled by means of bilinear interpolation to the image size.
 To obtain probability distributions, a softmax function is applied pixel-wise across prediction channels.
 
 This estimated probability distribution map is converted into a label map:
 \[
-	\mathbf{L}_{pred}(i, j) := \mathop{\text{arg max}}_{b \in \{ 0, \dotsc, B-1\}} \hat{\mathbf{P}}_{b}(i, j)
+	\mathbf{L}(i, j) = \mathop{\text{arg max}}_{b \in \{ 0, \dotsc, B-1\}} \mathbf{P}_{b}(i, j)
 \]
 
 % loss
 The loss employed is a variant of the multinomial logistic loss.
-Assume ground-truth depth map $\mathbf{Z}_{gt}$ is discretized to its label map $\mathbf{L}_{gt}$:
+Assume ground-truth depth map $\mathbf{Z}^{*}$ is discretized to its label map $\mathbf{L}^{*}$:
 \[
-	\mathbf{L}_{gt}(i,j) := b	\quad \text{such that} \quad \mathbf{Z}_{gt}(i,j) \text{ is in the } b\text{-th bin}
+	\mathbf{L}^{*}(i, j) = b \text{ such that } \mathbf{Z}^{*}(i, j) \text{ is in the } b\text{-th bin}
 \]
 The loss can be expressed as:
 \[
 	\mathcal{L} =
-		- \mathop{\text{mean}}_{(i,j) \in \mathbf{L}_{pred}}
+		- \mathop{\text{mean}}_{(i, j) \in \mathbf{L}^{*}}
 		\sum_{b = 0}^{B-1}
-		e^{-(b - \mathbf{L}_{gt}(i,j))^{2}}
-		\text{log} \, \hat{\mathbf{P}}_{b}(i,j)
+		e^{-(b - \mathbf{L}^{*}(i, j))^{2}}
+		\text{log} \, \mathbf{P}_{b}(i, j)
 \]
-The factor $e^{-(b - \mathbf{L}_{gt}(i,j))^{2}}$ makes the contribution of a predicted label proportional to its closeness to the ground truth label.
+The factor $e^{-(b - \mathbf{L}^{*}(i, j))^{2}}$ makes the contribution of a predicted label proportional to its closeness to the ground truth label.
 This is meaningful because labels are interpreted as discrete depth values.
 
 % comments on post-processing
@@ -306,18 +309,19 @@ Simply put, a CRF is a \textit{global} optimization procedure that adjusts discr
 A fully-connected CRF is a special kind of CRF.
 Not going into details, check \cite{computer_vision} for more.
 
-The optimized label map $\mathbf{L}_{pred}$ must be converted back to a depth map $\mathbf{Z}_{pred}$.
-The authors map labels to their respective bin centers:
+The optimized label map $\mathbf{L}$ must be converted back to a depth map $\mathbf{Z}$.
+The authors map labels to their respective bin centers by means of the following formulas:
 \[
-	\quad c_{b} := \frac{Z_{b} + Z_{b+1}}{2} \quad b = 0, 1, \dotsc, B-1
+	\quad c_{b} = \frac{Z_{b} + Z_{b+1}}{2} \quad b = 0, 1, \dotsc, B-1
 \]\[
-	\mathbf{Z}_{pred}(i,j) := c_{\mathbf{L}_{pred}(i,j)}
+	\mathbf{Z}(i, j) = c_{\mathbf{L}(i, j)}
 \]
 This sums up \cite{depth_as_classification}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %        Ordinal Regression
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 Fu et al. \cite{ordinal_regression} continue this line of research by adopting a slightly different approach which proved more effective.
 They formulate depth estimation as an \textit{ordinal regression} problem.
 The formal setting is very similar to the one of Cao et al., I will now illustrate the differences.
@@ -326,37 +330,39 @@ First, their method is end-to-end as shown in the image \ref{fig:Fu_ordinal}.
 % architecture
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.5]{figs/Fu_ordinal}
+	\includegraphics[scale=0.35]{figs/Fu_ordinal}
 	\caption{Fu et al. architecture \cite{ordinal_regression}. It employs an "atrous spatial pyramid pooling" module (ASPP) which deals with multiscale details by working with various dilation rates for convolutions. \label{fig:Fu_ordinal}}
 \end{figure}
 
-Second, a more sophisticated architecture estimates $\hat{\mathbf{P}}$ from $I$, and it is composed of different modules, some working in parallel and some in serial.
+Second, a more sophisticated architecture estimates $\mathbf{P}^{*}$ from $\mathbf{I}$, and it is composed of different modules, some working in parallel and some in serial.
 They use dilated convolutions for enlarging the field of view without decreasing spatial resolution or increasing number of parameters \cite{ordinal_regression} and $1 \times 1$ convolutions for cross-channel interactions \cite{ordinal_regression}.
-Third, they interpret $\mathbf{P}_{b}(i,j)$ as $\mathbb{P} \, \{ \mathbf{Z}_{gt}(i,j) < Z_{b+1} \}$, namely the probability that the pixel $(i,j)$ corresponds to a point that doesn't fall farther than the $b$-th depth bin.
-If a pixel $(i,j)$ corresponds to bin $\mathbf{L}_{gt}(i,j)$ then $\hat{\mathbf{P}}_{b}(i,j)$ must be maximized for $b \leq \mathbf{L}_{gt}(i,j)$ and minimized for $b > \mathbf{L}_{gt}(i,j)$, hence the following loss function:
+Third, they interpret $\mathbf{P}^{*}_{b}(i, j)$ as $\mathbb{P} \, \{ \mathbf{Z}^{*}(i, j) < Z_{b+1} \}$, namely the probability that the pixel $(i, j)$ corresponds to a point that doesn't fall farther than the $b$-th depth bin.
+If a pixel $(i, j)$ corresponds to bin $\mathbf{L}^{*}(i, j)$ then $\mathbf{P}_{b}(i, j)$ must be maximized for $b \leq \mathbf{L}^{*}(i, j)$ and minimized for $b > \mathbf{L}^{*}(i, j)$, hence the following loss function:
 \[
-	\mathcal{L} = - \mathop{\text{mean}}_{(i,j) \in \mathbf{L}} \left(
-		\sum_{b=0}^{\mathbf{L}_{gt}(i,j)} \text{log} \,( \hat{p}_{b}(i,j)) \quad +
-		\sum_{b=\mathbf{L}_{gt}(i,j) + 1}^{B-1} \text{log} \, (1 - \hat{p}_{b}(i,j))
-		\right)
+	\mathcal{L} = - \mathop{\text{mean}}_{(i, j) \in \mathbf{L}^{*}}
+	\left(
+		\sum_{b=0}^{\mathbf{L}^{*}(i, j)} \text{log} \,( \mathbf{P}_{b}(i, j)) \quad +
+		\sum_{b=\mathbf{L}^{*}(i, j) + 1}^{B-1} \text{log} \, (1 - \mathbf{P}_{b}(i, j))
+	\right)
 \]
-The predicted label map $\mathbf{L}_{pred}$ is defined as:
+The predicted label map $\mathbf{L}$ is defined as:
 \[
-	\mathbf{L}_{pred}(i,j) := \# \{b \, \text{ such that } \, \hat{\mathbf{P}}_{b}(i,j) > 0.5\}
+	\mathbf{L}(i, j) = | \{b \, \text{ such that } \, \mathbf{P}_{b}(i, j) > 0.5\} |
 \]
-Ideally $\hat{p}_{b}(i) > 0.5$ for $b \leq \mathbf{L}_{gt}(i,j)$ and $\hat{p}_{b}(i,j) \leq 0.5$ for $b > \mathbf{L}_{gt}(i,j)$, so that $\mathbf{L}_{pred}(i,j) = \mathbf{L}_{gt}(i,j)$.
-In case $\hat{p}_{b}(i,j)$ is above $0.5$ for every $b$, $(i,j)$ can be considered at a depth outside the range $\mathbf{Z}_{\text{min}}$, $\mathbf{Z}_{\text{max}}$, e.g. it can correspond to a point at $\infty$ depth like the sky.
+Ideally $\mathbf{P}_{b}(i, j) > 0.5$ for $b \leq \mathbf{L}^{*}(i, j)$ and $\mathbf{P}_{b}(i, j) \leq 0.5$ for $b > \mathbf{L}^{*}(i, j)$, so that $\mathbf{L}(i, j) = \mathbf{L}^{*}(i, j)$.
+In case $\mathbf{P}_{b}(i, j)$ is above $0.5$ for every $b$, $(i, j)$ can be considered at a depth outside the range $Z_{\text{min}}$, $Z_{\text{max}}$, e.g. it can correspond to a point at $\infty$ depth like the sky.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %               AdaBins
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 Bhat et al. \cite{AdaBins} generalize the ideas from Fu et al. \cite{ordinal_regression}.
 They observe that depth distribution vary to a large extent between different scenes, therefore depth bins must be adapted per image.
-Now follows the pipeline.
+Now the pipeline follows.
 
-The image $I$ is processed by an encoder $\mathcal{E}$ decoder $\mathcal{D}$ architecture to obtain what the authors call \textit{decoded features}, that is a multichannel feature map $\mathbf{F}$:
+The image $\mathbf{I}$ is processed by an encoder $\mathcal{E}$ decoder $\mathcal{D}$ architecture to obtain what the authors call \textit{decoded features}, that is a multichannel feature map $\mathbf{F}$:
 \[
-	\mathbf{F} := \mathcal{D}(\mathcal{E}(I)) \quad H \times W \times C \text{ feature map}
+	\mathbf{F} = \mathcal{D}(\mathcal{E}(\mathbf{I})) \quad H \times W \times C \text{ feature map}
 \]
 The rest of the pipeline is the "AdaBins" block, as the authors call it.
 The idea of Bhat et al. for estimating the bins adaptively is to extract \textit{global} information and to use that for the purpose.
@@ -369,30 +375,29 @@ Hence $\mathcal{T}(\mathbf{F}) = (\mathcal{T}(\mathbf{F})_{1}, \dotsc, \mathcal{
 Each of these vectors encodes global information, any one of them can be used to get the bins, e.g. the first one $\mathcal{T}(\mathbf{F})_{1}$.
 The authors construct the discretization of the depth range by computing relative bin-widths from global information:
 \[
-	(w_{0}, \dotsc, w_{B-1}) := \text{learnable mapping }(\mathcal{T}(\mathbf{F})_{1})
+	(w_{0}, \dotsc, w_{B-1}) = \text{learnable mapping }(\mathcal{T}(\mathbf{F})_{1})
 \]\[
-	\text{such that} \quad \forall b \,\, w_{b} > 0 \, \text{ and } \, \sum_{b=0}^{B-1} w_{b} = 1
+	\text{such that } \forall b \,\, w_{b} > 0 \, \text{ and } \, \sum_{b=0}^{B-1} w_{b} = 1
 \]
-Bins extrema $Z_{b}$ and bin centers $c_{b}$ can be calculated knowing the depth range $Z_{\text{max}}$, $Z_{\text{min}}$(dataset dependent) and using the following formula:
+Bins extrema $Z_{b}$ and bin centers $c_{b}$ can be calculated knowing the depth range $Z_{\text{max}}$, $Z_{\text{min}}$ (dataset dependent) and by using the following formula:
 \[
 	w_{b} = \frac{Z_{b+1} - Z_{b}}{Z_{\text{max}} - Z_{\text{min}}} \quad b=0, 1, \dotsc, B-1
 \]
 Now that the depth range has been discretized, labels probabilities need to be computed.
-For this final step global information is exploited again: $\mathbf{F}$ (which has $C$ channels) is convolved with each $\mathcal{T}(\mathbf{F})_{s}$ $s=1,\dotsc,S$, which are thought as $C \times 1 \times 1$ kernels and an $H \times W \times S$ map is returned which is in turn pixel-wise processed to obtain a probability map $\hat{p}$ of size $H \times W \times B$.
+For this final step global information is exploited again: $\mathbf{F}$ (which has $C$ channels) is convolved with each $\mathcal{T}(\mathbf{F})_{s}$ $s=1,\dotsc,S$, which are thought as $C \times 1 \times 1$ kernels and an $H \times W \times S$ map is returned which is in turn pixel-wise processed to obtain a probability map $\mathbf{P}$ of size $H \times W \times B$.
 
 Finally, depth can be estimated.
 To avoid discretization artifacts they compute the depth as the following linear combination:
 \[
-	\mathbf{Z}_{pred}(i,j) := \sum_{b=0}^{B-1} \hat{\mathbf{P}}_{b}(i,j) \, c_{b}
+	\mathbf{Z}(i, j) = \sum_{b=0}^{B-1} c_{b} \, \mathbf{P}_{b}(i, j)
 \]
-Therefore, in this work, $\hat{\mathbf{p}}_{b}(i,j)$ can be interpreted as an approximation to the p.d.f. of the pixel-wise depth distribution.
+Therefore, in this work, $\mathbf{P}_{b}(i, j)$ can be interpreted as an approximation to the p.d.f. of the pixel-wise depth distribution.
 
-Other than optimizing the depth map obtained, also the bins need to be optimized.
-For the former Bhat et al. use a Scale-Invariant loss \cite{Eigen}, for the latter they adopt the following:
+While for optimizing the depth map obtained Bhat et al. use a Scale-Invariant loss \cite{Eigen}, for optimizing the bin centers $c_{b}$ they adopt the following:
 \[
 	\mathcal{L}_{\text{bins}} =
-	\sum_{(i,j) \in \mathbf{Z}_{gt}} \mathop{\text{min}}_{b \in \{0, \dotsc, B-1\}} \, (\mathbf{Z}_{gt}(i,j) - c_{b})^{2} \quad+
-	\sum_{b \in \{0, \dotsc, B-1\}} \mathop{\text{min}}_{(i,j) \in \mathbf{Z}_{gt}} \, (\mathbf{Z}_{gt}(i,j) - c_{b})^{2}
+	\sum_{(i, j) \in \mathbf{Z}^{*}} \mathop{\text{min}}_{b \in \{0, \dotsc, B-1\}} \, (\mathbf{Z}^{*}(i, j) - c_{b})^{2} \quad+
+	\sum_{b \in \{0, \dotsc, B-1\}} \mathop{\text{min}}_{(i, j) \in \mathbf{Z}^{*}} \, (\mathbf{Z}^{*}(i, j) - c_{b})^{2}
 \]
 This loss, called "bidirectional Chamfer Loss" \cite{AdaBins}, encourages the bin center distribution to match the ground-truth depth distribution.
 
@@ -400,27 +405,28 @@ This loss, called "bidirectional Chamfer Loss" \cite{AdaBins}, encourages the bi
 %              ZoeDepth
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Bhat et al. \cite{ZoeDepth} refine their ideas computing depth bins pixel-wise.
-The result is a two-stage method for estimating both relative and metric depth \ref{fig:zoe_depth}.
+The result is a two-stage method for estimating both relative and metric depth, the overall architecture is shown in figure \ref{fig:zoe_depth}.
 
 % architecture
 \begin{figure}
 	\centering
-	\includegraphics[scale=0.5]{figs/zoe_depth}
+	\includegraphics[scale=0.3]{figs/zoe_depth}
 	\caption{Bhat et al. architecture \cite{ZoeDepth}. \label{fig:zoe_depth}}
 \end{figure}
 
 They use the multi-dataset training procedure of \cite{MiDas} and the general encoder-decoder architecture for estimating relative depth maps is taken from \cite{denseViT}.
 To the decoder they attach a head, which they call "Metric Bins Module", for converting relative depth maps into metric depth maps.
 Therefore, when training on relative depth datasets only the decoder output is used, whilst when training on metric depth datasets the output of the head is considered.
-The Metric Bins Module works at multiple scales: given the lowest scale relative depth map returned by the decoder, a point-wise convolution estimates $B$ bin centers $\{c_{0}, c_{1}, \dotsc, c_{B-1}\}$ pixel-wise, then at successive finer scales other point-wise convolutions return $K$ "attractors" $\{a_{1}, a_{2}, \dotsc, a_{K}\}$, which serve the purpose to modify the previously computed bin distribution by computing an adjustment $\triangle c_{b}$ for each bin center:
+The Metric Bins Module works at multiple scales: given the lowest scale relative depth map returned by the decoder, a point-wise convolution estimates $B$ bin centers $\{\mathbf{C}_{0}, \mathbf{C}_{1}, \dotsc, \mathbf{C}_{B-1}\}$ pixel-wise, then at successive finer scales other point-wise convolutions return $K$ "attractors" $\{\mathbf{A}_{1}, \mathbf{A}_{2}, \dotsc, \mathbf{A}_{K}\}$, which serve the purpose to modify the previously computed bin distributions pixel-wise by computing an adjustment $\triangle \mathbf{C}_{b}$ for each bin center:
 \[
-	\triangle c_{b} := \sum_{k=1}^{K} \frac{a_{k} - c_{b}}{1 + \alpha | a_{k} - c_{b} |^{\gamma}}
+	\triangle \mathbf{C}_{b} = \sum_{k=1}^{K} \frac{\mathbf{A}_{k} - \mathbf{C}_{b}}{1 + \alpha | \mathbf{A}_{k} - \mathbf{C}_{b} |^{\gamma}}
 \]
-How to convert a set of pixel-wise depths $\{c_{0}, c_{1}, \dotsc, c_{B}\}$ to a single value?
-They assign to each bin a probability $\hat{\mathbf{p}}_{i}$ so that the resulting depth value is:
+Like before, they assign to each bin (pixel-wise) a probability $\mathbf{P}_{b}$ so that the predicted depth map is:
 \[
-	\mathbf{Z} = \sum_{i=0}^{B-1} \hat{p}_{b} \, c_{b}
+	\mathbf{Z} = \sum_{i=0}^{B-1} \mathbf{C}_{b} \, \mathbf{P}_{b}
 \]
-In this formula bins are ordered and to make sure not to obtain a difficult to interpret multi-modal probability distributions, they build $\{\hat{\mathbf{P}}_{b}\}_{b=0}^{B-1}$ using the binomial distribution. Hence instead of predicting the actual probability values, binomial distribution parameters are computed.
+In this formula bins are ordered since their ordering is not preserved during training depending on how the attractors influence.
+To make sure not to obtain a difficult to interpret multi-modal probability distributions, the authors build $\mathbf{P}$ pixel-wise and across the bins-channel using the binomial distribution.
+Hence, instead of predicting the actual probability values, binomial distribution parameters are computed.
 To make things numerically stable they employ some more trickery I won't report.
 The page with their code is \url{https://github.com/isl-org/ZoeDepth}.
