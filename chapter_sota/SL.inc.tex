@@ -356,9 +356,18 @@ In case $\mathbf{P}_{b}(i, j)$ is above $0.5$ for every $b$, $(i, j)$ can be con
 %               AdaBins
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
-Bhat et al. \cite{AdaBins} generalize the ideas from Fu et al. \cite{ordinal_regression}.
+Shariq Farooq Bhat and other researchers worked a lot on single image depth estimation using bin-methods and developed three important works: AdaBins \cite{AdaBins}, LocalBins \cite{LocalBins} and ZoeDepth \cite{ZoeDepth}.
+
+In the first work, Bhat et al. \cite{AdaBins} generalize the ideas from Fu et al. \cite{ordinal_regression}.
 They observe that depth distribution vary to a large extent between different scenes, therefore depth bins must be adapted per image.
-Now the pipeline follows.
+The pipeline is illustrated in figure \ref{fig:adabins}.
+
+% architecture
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.35]{figs/adabins}
+	\caption{Bhat et al. architecture \cite{AdaBins}. \label{fig:adabins}}
+\end{figure}
 
 The image $\mathbf{I}$ is processed by an encoder $\mathcal{E}$ decoder $\mathcal{D}$ architecture to obtain what the authors call \textit{decoded features}, that is a multichannel feature map $\mathbf{F}$:
 \[
@@ -402,9 +411,39 @@ While for optimizing the depth map obtained Bhat et al. use a Scale-Invariant lo
 This loss, called "bidirectional Chamfer Loss" \cite{AdaBins}, encourages the bin center distribution to match the ground-truth depth distribution.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%              LocalBins
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In \cite{LocalBins} Bhat et al. notice that depth discretization must be performed locally, pixel-wise, rather than globally.
+In fact, depth values distributions can widely vary across a single image.
+The overall procedure is shown in figure \ref{fig:localbins}.
+
+% architecture
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.3]{figs/localbins}
+	\caption{Bhat et al. architecture \cite{LocalBins}. LocalBins module contains pixel-wise operations and estimate local neighborhood bin density for each pixel location. \label{fig:localbins}}
+\end{figure}
+
+Instead of directly predicting the whole depth range discretization, Bhat et al. employ a coarse-to-fine binning strategy.
+They start from $B_{\text{seed}}$ bins and during the decoding phase, exploiting multi-scale processing, they apply a bin-splitter module that doubles the number of bins.
+Bins are specified through their widths, like in AdaBins, but pixel-wise, so a map $\mathbf{W} \in \mathbb{R}^{H \times W \times B}$ is computed at each step of the decoding phase with $B$ doubling each time.
+To "split the bins" the idea is to divide each bin-width into two more by means of a convex combination.
+Basically a map $\mathbf{A}$ of same shape as $\mathbf{W}$ is computed but with values in $(0, 1)$ and the new bin-widths are obtained by concatenating the two following tensors:
+\[
+	\mathbf{B}_{0} = \mathbf{A} \odot \mathbf{W}
+\]\[
+	\mathbf{B}_{1} = (1 - \mathbf{A}) \odot \mathbf{W}
+\]\[
+	\mathbf{B}_{\text{new}} = \text{concat} (\mathbf{B}_{0}, \mathbf{B}_{1})
+\]
+The training loss is similar to the Chamfer loss introduced above, but adapted to the multi-scale setting.
+For further details see \cite{LocalBins}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              ZoeDepth
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Bhat et al. \cite{ZoeDepth} refine their ideas computing depth bins pixel-wise.
+Eventually, Bhat et al. \cite{ZoeDepth} refine their ideas for computing depth bins pixel-wise in their work called "ZoeDepth".
 The result is a two-stage method for estimating both relative and metric depth, the overall architecture is shown in figure \ref{fig:zoe_depth}.
 
 % architecture
@@ -417,7 +456,7 @@ The result is a two-stage method for estimating both relative and metric depth, 
 They use the multi-dataset training procedure of \cite{MiDas} and the general encoder-decoder architecture for estimating relative depth maps is taken from \cite{denseViT}.
 To the decoder they attach a head, which they call "Metric Bins Module", for converting relative depth maps into metric depth maps.
 Therefore, when training on relative depth datasets only the decoder output is used, whilst when training on metric depth datasets the output of the head is considered.
-The Metric Bins Module works at multiple scales: given the lowest scale relative depth map returned by the decoder, a point-wise convolution estimates $B$ bin centers $\{\mathbf{C}_{0}, \mathbf{C}_{1}, \dotsc, \mathbf{C}_{B-1}\}$ pixel-wise, then at successive finer scales other point-wise convolutions return $K$ "attractors" $\{\mathbf{A}_{1}, \mathbf{A}_{2}, \dotsc, \mathbf{A}_{K}\}$, which serve the purpose to modify the previously computed bin distributions pixel-wise by computing an adjustment $\triangle \mathbf{C}_{b}$ for each bin center:
+The Metric Bins Module works at multiple scales: given the lowest scale relative depth map returned by the decoder, a point-wise convolution estimates $B$ bin centers $\{\mathbf{C}_{0}, \mathbf{C}_{1}, \dotsc, \mathbf{C}_{B-1}\} \subset \mathbb{R}^{H \times W \times B}$ pixel-wise, then at successive finer scales other point-wise convolutions return $K$ "attractors" $\{\mathbf{A}_{1}, \mathbf{A}_{2}, \dotsc, \mathbf{A}_{K}\} \subset \mathbb{R}^{H \times W \times K}$, which serve the purpose to modify the previously computed bin distributions pixel-wise by computing an adjustment $\triangle \mathbf{C}_{b}$ for each bin center:
 \[
 	\triangle \mathbf{C}_{b} = \sum_{k=1}^{K} \frac{\mathbf{A}_{k} - \mathbf{C}_{b}}{1 + \alpha | \mathbf{A}_{k} - \mathbf{C}_{b} |^{\gamma}}
 \]
@@ -429,4 +468,3 @@ In this formula bins are ordered since their ordering is not preserved during tr
 To make sure not to obtain a difficult to interpret multi-modal probability distributions, the authors build $\mathbf{P}$ pixel-wise and across the bins-channel using the binomial distribution.
 Hence, instead of predicting the actual probability values, binomial distribution parameters are computed.
 To make things numerically stable they employ some more trickery I won't report.
-The page with their code is \url{https://github.com/isl-org/ZoeDepth}.
