@@ -1,5 +1,6 @@
 \newpage
-\section{Self Supervised}
+\section{Self Supervised Methods}
+\label{s:ssl}
 There's a line of research tackling monocular depth estimation from a self-supervised learning approach.
 Well studied geometric relations implicitly constrain depth maps of subsequent frames in videos or in stereo pairs making it suitable to define self-supervised losses for training, i.e. not dependent on ground truth depth maps.
 The general idea is simple: given a pair of images geometrically related (e.g. subsequent video frames or a stereo pair), predict the disparity map of one of them and use it to reconstruct the other, the quality of the reconstruction is the target of the optimization.

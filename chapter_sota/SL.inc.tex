@@ -1,4 +1,11 @@
 \section{Regression Methods}
+Depth estimation can be naturally formulated as a regression problem.
+Every pixel $p$ of an image $\mathbf{I}$ has an associated (positive) depth value $z \in \mathbb{R}^{+}$.
+Monocular depth estimation consists in regressing to that depth value pixel-wise.
+The input of the developed method is an image $\mathbf{I}$ and the output a depth map $\mathbf{Z}$.
+
+\label{s:regression_methods}
+
 \begin{center}
 \begin{table}[h!]
 \begin{tabular}{| c | c | c | c | c |}
@@ -19,6 +26,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                 EIGEN
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Eigen et al.}
 Eigen et al. \cite{Eigen} are the first to apply deep learning to metric monocular depth estimation.
 They develop a two-stage method composed of a global coarse-scale network $\mathcal{S}_{1}$ (corresponding to the "Coarse" module in figure\ref{fig:Eigen}) which predicts the overall depth map using a global view of the scene and a local fine-scale network $\mathcal{S}_{2}$ (corresponding to the "Fine" module in figure\ref{fig:Eigen}) which locally refines it.
 $\mathcal{S}_{1}$ uses AlexNet \cite{AlexNet} as backbone for features encoding and decodes them using an MLP, while $\mathcal{S}_{2}$ is a shallower CNN with smaller receptive field.
@@ -89,6 +97,7 @@ This term encourages the predicted depth map to have a local structure similar t
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                 LAINA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Laina et al.}
 Laina et al. \cite{Laina} use a fully convolutional neural network (FCNN) for regressing metric depth maps.
 Their architecture is an encoder-decoder based on ResNet \cite{ResNet} and four up-sampling blocks (see figure \ref{fig:Laina}) are introduced and tested for the decoding part.
 A great improvement over the work of Eigen et al. is that using an FCNN drastically reduces the number of parameters of the network, making it feasible to increase the output resolution and to work in real-time.
@@ -131,6 +140,7 @@ This could also explain \cite{Laina} why working in the log-scale was beneficial
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                 DIW
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{DIW}
 Chen et al. \cite{DIW} tackle \textit{relative} depth estimation in the wild.
 They both propose a method for training a model to learn relative depth and introduce a new dataset "Depth in the Wild" (\texttt{DIW}) which is discussed in the "Datasets" section.
 The former is here treated.
@@ -185,6 +195,7 @@ It's very unlikely that two distinct pixels share the same identical depth value
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                 ReDWeb
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{ReDWeb}
 Xian et al. \cite{ReDWeb} continue to study the problem of monocular relative depth estimation in the wild in the same way as Chen et al. \cite{DIW} did: they introduce a new dataset "Relative Depth from Web" (\texttt{ReDWeb}) and propose a training methodology.
 The focus of this discussion is on the latter.
 Contrary to \cite{DIW}, here the authors put more emphasis on the design of the architecture they use which is shown in figure \ref{fig:ReDWeb_architecture} below.
@@ -204,6 +215,7 @@ In this way two things are achieved: the ratio of the equal relation in the samp
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %               denseViT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{denseViT}
 In \cite{denseViT} Ranftl et al. use the ViT \cite{ViT} architecture for monocular affine depth estimation following the MiDas training procedure \cite{MiDas}, their architecture is called Dense Prediction Transformer (DPT).
 They substitute the usual fully convolutional encoder with ViT blocks, see figure \ref{fig:denseViT_architecture}.
 The main idea is to process image patches using ViT modules and to re-assemble the obtained tokens as their respective patches creating a feature map.
@@ -221,8 +233,8 @@ Transformers have been known to better scale with dataset size than CNN based ar
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
 \section{Bin Methods}
+\label{s:bin_methods}
 Instead of regressing continuous depth values, these methods discretize the depth range and work with bins.
 The discretization of depth range can be global and fixed \cite{depth_as_classification, ordinal_regression}, global but dependent on the image \cite{AdaBins}, local and dependent on the single pixel \cite{ZoeDepth}.
 When probabilities (or scores, depending on the interpretation) are assigned to each bin, a depth value is actually computed which can eventually space in the whole range considered.
