@@ -4,6 +4,43 @@ There's a line of research tackling monocular depth estimation from a self-super
 Well studied geometric relations implicitly constrain depth maps of subsequent frames in videos or in stereo pairs making it suitable to define self-supervised losses for training, i.e. not dependent on ground truth depth maps.
 The general idea is simple: given a pair of images geometrically related (e.g. subsequent video frames or a stereo pair), predict the disparity map of one of them and use it to reconstruct the other, the quality of the reconstruction is the target of the optimization.
 
+Before delving into the self supervised works, let's review the main concepts of view synthesis from a disparity map.
+
+Let's consider the pair of images captured by stereo cameras $(\mathbf{I}^{l}, \mathbf{I}^{r})$, respectively captured by a left camera and a right camera, what are their disparity maps $(\mathbf{D}^{l}, \mathbf{D}^{r})$?
+
+Consider a pixel $p$ in the left image $\mathbf{I}^{l}$, this corresponds to a position in the scene 3D space.
+This same scene is captured from a different view point by the right camera, the result is the right image $\mathbf{I}^{r}$.
+There is a pixel of the right image that corresponds to the pixel $p$ of the left image, meaning that they represent the same location in the scene 3D space and their color is identical.
+If we overlap $\mathbf{I}^{l}$ and $\mathbf{I}^{r}$ we can see the displacement between the two pixels, which can be represented as a 2D vector and let's call it $\mathbf{D}^{l}(p)$, so we get:
+\[
+	\mathbf{I}^{l}(p) = \mathbf{I}^{r}(p + \mathbf{D}^{l}(p))
+\]
+$\mathbf{D}^{l}(p)$ is the offset to apply to $p$ location in the left image in order to obtain its corresponding location in the right image, hence $\mathbf{D}^{l}$ is a 2D vector field represented by a tensor of shape $H \times W \times 2$.
+This was the left disparity map, symmetrically for the right disparity map it holds:
+\[
+	\mathbf{I}^{r}(p) = \mathbf{I}^{l}(p + \mathbf{D}^{r}(p))
+\]
+By means of this very symmetry, one disparity map can be written in terms of the other:
+\[
+\mathbf{D}^{l}(p) = - \mathbf{D}^{r}(p + \mathbf{D}^{l}(p))
+\]\[
+\mathbf{D}^{r}(p) = - \mathbf{D}^{l}(p + \mathbf{D}^{r}(p))
+\]
+Now, not every 3D scene location can be visible from all view-points since occlusion can happen.
+Thus, disparity maps are not defined at every pixel location.
+Another assumption that was made during this discussion is that object appearance is view-point independent, this only holds for Lambertian surfaces and if we do not consider atmospheric effects.
+This assumption led to corresponding pixels in different images having the same color.
+
+Assume now that the right image is unknown, given the right disparity map it can be reconstructed in a \textit{differentiable} manner by following the above formulas.
+Similarly, for the left image the procedure is the same given the left disparity map.
+
+These formulas make it feasible to reconstruct an image from another given some information about the geometry of the scene, be it in the form of a disparity map or a depth map.
+In fact, in the stereo setting, a disparity map can be converted into a depth map and vice-versa \cite{multiview}, although cameras parameters must be known.
+
+Usually stereo-footage from a camera pair is rectified.
+Rectifying stereo images means aligning them in such a way that disparity vectors are always horizontal, hence the 2D disparity vector field reduces to a 1D vector field, i.e. represented by a tensor of shape $H \times W$.
+This is the setting in which every author that uses stereo video footage find itself in.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              Garg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -18,16 +55,16 @@ In figure \ref{fig:garg} the training pipeline is illustrated.
 	\caption{Garg et al. self supervised pipeline \cite{Garg}. \label{fig:garg}}
 \end{figure}
 
-Given a stereo pair $\mathbf{I}_{l}, \mathbf{I}_{r}$ they feed $\mathbf{I}_{l}$ to their depth estimation network which returns an estimate of its depth map $\mathbf{Z}_{l}$.
-After converting $\mathbf{Z}_{l}$ to a disparity map $\mathbf{D}_{l}$, this can be used to reconstruct the left image using the following formula: $\hat{\mathbf{I}}_{l} (p) = \mathbf{I}_{r} (p + \mathbf{D}_{l}(p))$, for all pixels $p \in \mathbf{D}_{l}$.
+Given a stereo pair $\mathbf{I}^{l}, \mathbf{I}^{r}$ they feed $\mathbf{I}^{l}$ to their depth estimation network which returns an estimate of its depth map $\mathbf{Z}^{l}$.
+After converting $\mathbf{Z}^{l}$ to a disparity map $\mathbf{D}^{l}$, this can be used to reconstruct the left image using the formula from above: $\hat{\mathbf{I}}^{l} (p) = \mathbf{I}^{r} (p + \mathbf{D}^{l}(p))$, for all pixels $p \in \mathbf{D}^{l}$.
 A first order approximation of its gradient is provided through an iterative algorithm, this same procedure represents one of the main limitations of this work since it makes the procedure computationally much more expensive.
 The loss to be minimized is the reconstruction error between $\hat{\mathbf{I}}_{l}$ and $\mathbf{I}_{l}$, Garg et al. define it as a mean squared error:
 \[
-	\mathcal{L}_{rec} = \text{mean}_{p \in \hat{\mathbf{I}}_{l}} \big\| \hat{\mathbf{I}}_{l}(p) - \mathbf{I}_{l}(p) \big\|^{2}
+	\mathcal{L}_{rec} = \text{mean}_{p \in \hat{\mathbf{I}}^{l}} \big\| \hat{\mathbf{I}}^{l}(p) - \mathbf{I}^{l}(p) \big\|^{2}
 \]
 The authors also employ a regularization term that smooths the resulting disparity maps:
 \[
-	\mathcal{L}_{smooth} = \text{mean}_{p \in \hat{\mathbf{I}}_{l}} \big\| \nabla \mathbf{D}_{l} (p) \big\|^{2}
+	\mathcal{L}_{smooth} = \text{mean}_{p \in \hat{\mathbf{I}}^{l}} \big\| \nabla \mathbf{D}^{l} (p) \big\|^{2}
 \]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,39 +74,6 @@ The authors also employ a regularization term that smooths the resulting dispari
 Godard et al. \cite{MonoDepth} builds upon the work of Garg et al. \cite{Garg}.
 Their method is called MonoDepth.
 
-Let's consider the pair of images captured by a stereo cameras $(\mathbf{I}^{l}, \mathbf{I}^{r})$, their disparity maps $(\mathbf{D}^{l}, \mathbf{D}^{r})$?
-
-Consider a pixel $p$ in the left image $\mathbf{I}^{l}$, this corresponds to a position in the scene 3D space.
-This same scene is captured from a different view point by the right camera, the result is the right image $\mathbf{I}^{r}$.
-There is a pixel of the right image that corresponds to the pixel $p$ of the left image, meaning that they represent the same location in the scene 3D space and their color is identical.
-If we overlap $\mathbf{I}^{l}$ and $\mathbf{I}^{r}$ we can see the displacement between the two pixels, which can be represented as a 2D vector and let's call it $\mathbf{D}^{l}(p)$, so we get:
-\[
-	\mathbf{I}^{l}(p) = \mathbf{I}^{r}(p + \mathbf{D}^{l}(p))
-\]
-
-$\mathbf{D}^{l}(p)$ is the offset to apply to $p$ location in the left image in order to obtain its corresponding location in the right image, hence $\mathbf{D}^{l}$ is a 2D vector field of shape $H \times W \times 2$.
-This is the left disparity map, symmetrically for the right disparity map it holds:
-\[
-	\mathbf{I}^{r}(p) = \mathbf{I}^{l}(p + \mathbf{D}^{r}(p))
-\]
-By means of this very symmetry, one disparity map can be written in terms of the other:
-\[
-\mathbf{D}^{l}(p) = - \mathbf{D}^{r}(p + d(p)^{l})
-\]\[
-\mathbf{D}^{r}(p) = - \mathbf{D}^{l}(p + d(p)^{r})
-\]
-
-Now, not every 3D scene location can be visible from all view-points since occlusion can happen.
-Thus, disparity maps are not defined at every pixel location.
-Another assumption that was made during this discussion is that object appearance is view-point independent, this only holds for Lambertian surfaces and if we do not consider atmospheric effects.
-This assumption led to corresponding pixels in different images have the same color.
-But since it is useful, the Godard et al. keep it.
-
-As stated before, Godard et al. apply their method to \textit{rectified} stereo footage, what is that?
-It's just video footage captured by stereo cameras which are aligned in such a way that disparity vectors are always horizontal, hence the 2D disparity vector field reduces to a 1D vector field, i.e. of shape $H \times W$.
-
-Assume now that the right image is unknown, given the right disparity map it can be reconstructed in a \textit{differentiable} manner by following the above formulas.
-Similarly, for the left image the procedure is the same given the left disparity map.
 The limitation of Garg et al. work is now surpassed by employing a simpler sampling procedure for reconstruction that comes from "Spatial Transformer Network" paper \cite{STN}.
 This makes the gradient computation exact and cheaper.
 
@@ -87,12 +91,12 @@ The loss function to be minimized per image pair is the following:
 Where $\alpha_{ap}$, $\alpha_{ds}$, $\alpha_{lr}$ are positive hyperparameters.
 While $\mathcal{L}_{ap}$ is the image reconstruction error, $\mathcal{L}_{ds}$ and $\mathcal{L}_{lr}$ are two regularization terms enforcing more geometric consistency in the predicted disparity maps.
 
-\textbf{Appearance Matching Loss} $\mathcal{L}_{ap} \quad$ This is a photometric image reconstruction loss, meaning that penalizes pairs of images appearing too different locally.
+\paragraph{Appearance Matching Loss $\mathcal{L}_{ap}$} This is a photometric image reconstruction loss, meaning that penalizes pairs of images appearing too different locally.
 How to measure similarity in appearance?
 In \cite{SSIM} Wang et al. developed a differentiable similarity index for comparing the appearance of two image patches called \textsc{SSIM}.
 In here Godard et al. couple it with the $L1$ loss to account for appearance discrepancies.
 \[
-	\mathcal{L}_{ap}^{l} = \textsc{Mean}_{p \in \mathbf{I}^{l}}
+	\mathcal{L}_{ap}^{l} = \text{mean}_{p \in \mathbf{I}^{l}}
 		\left(
 			0.85 \frac{
 				1 - \textsc{SSIM} (\mathbf{I}^{l}(p), \hat{\mathbf{I}}^{l}(p))
@@ -100,7 +104,7 @@ In here Godard et al. couple it with the $L1$ loss to account for appearance dis
 			0.15 \big| \mathbf{I}(p)^{l} - \hat{\mathbf{I}}(p)^{l} \big|
 		\right)
 \]\[
-	\mathcal{L}_{ap}^{r} = \textsc{Mean}_{p \in \mathbf{I}^{r}}
+	\mathcal{L}_{ap}^{r} = \text{mean}_{p \in \mathbf{I}^{r}}
 		\left(
 			0.85 \frac{
 				1 - \textsc{SSIM} (\mathbf{I}^{r}(p), \hat{\mathbf{I}}^{r}(p))
@@ -109,36 +113,36 @@ In here Godard et al. couple it with the $L1$ loss to account for appearance dis
 		\right)
 \]
 
-\textbf{Disparity Smoothness Loss} $\mathcal{L}_{ds} \quad$ Except for edges and holes in the disparity map, we expect it to be smooth.
+\paragraph{Disparity Smoothness Loss $\mathcal{L}_{ds}$} Except for edges and holes in the disparity map, we expect it to be smooth.
 How to mathematically express this?
 Smoothness (not in the mathematical sense) means a gradient low in magnitude, so that there are not abrupt changes.
 The exception is on the edges, which can be loosely characterized as the points with high magnitude image gradient.
 By multiplying $\big| \partial \mathbf{D}(p) \big|$ by $e^{- \big| \partial \mathbf{I}(p) \big| }$smoothness is enforced only on the "interior".
 Adapting this idea to the fact that images have 3 channels and the gradient operator has two components, the result is:
 \[
-	\mathcal{L}_{ds}^{l} = \textsc{Mean}_{p \in \mathbf{I}^{l}}
+	\mathcal{L}_{ds}^{l} = \text{mean}_{p \in \mathbf{I}^{l}}
 		\left(
 			\big| \partial_{x} \mathbf{D}^{l}(p) \big| e^{-\big\| \partial_{x} \mathbf{I}^{l}(p) \big\| } + 
 			\big| \partial_{y} \mathbf{D}^{l}(p) \big| e^{-\big\| \partial_{y} \mathbf{I}^{l}(p) \big\| }
 		\right)
 \]\[
-	\mathcal{L}_{ds}^{r} = \textsc{Mean}_{p \in \mathbf{I}^{r}}
+	\mathcal{L}_{ds}^{r} = \text{mean}_{p \in \mathbf{I}^{r}}
 		\left(
 			\big| \partial_{x} \mathbf{D}^{r}(p) \big| e^{-\big\| \partial_{x} \mathbf{I}^{r}(p) \big\| } + 
 			\big| \partial_{y} \mathbf{D}^{r}(p) \big| e^{-\big\| \partial_{y} \mathbf{I}^{r}(p) \big\| }
 		\right)
 \]
 
-\textbf{Left-Right Disparity Consistency Loss} $\mathcal{L}_{lr} \quad$ This enforces disparity maps to obey above relations.
+\paragraph{Left-Right Disparity Consistency Loss $\mathcal{L}_{lr}$} This enforces disparity maps to obey above relations.
 Notice that even though the losses in the left and right images are perfectly symmetrical, there are image locations in which only one of them makes sense because the other exceeds image boundaries.
 Hence, both of them are needed.
 \[
-	\mathcal{L}_{lr}^{l} = \textsc{Mean}_{p \in \mathbf{I}^{l}}
+	\mathcal{L}_{lr}^{l} = \text{mean}_{p \in \mathbf{I}^{l}}
 		\left(
 			\big| \mathbf{D}^{l}(p) + \mathbf{D}^{r}(p + \mathbf{D}^{l}(p)) \big|
 		\right)
 \]\[
-	\mathcal{L}_{lr}^{r} = \textsc{Mean}_{p \in \mathbf{I}^{r}}
+	\mathcal{L}_{lr}^{r} = \text{mean}_{p \in \mathbf{I}^{r}}
 		\left(
 			\big| \mathbf{D}^{r}(p) + \mathbf{D}^{l}(p + \mathbf{D}^{r}(p)) \big|
 		\right)
@@ -191,7 +195,7 @@ As should be clear by now, image reconstruction from different views is heavily 
 Zhou et al. thought of weighting every pixel in the view synthesis reconstruction loss with a zero to one value $\hat{\mathbf{E}}(p)$ that represents the success probability of the view-synthesis process in $p$.
 So that:
 \[
-	\mathcal{L}_{vs} = \textsc{Mean}_{p \in \mathbf{I}}
+	\mathcal{L}_{vs} = \text{mean}_{p \in \mathbf{I}}
 		\left(
 			\hat{\mathbf{E}}(p) \big| \mathbf{I}(p) - \hat{\mathbf{I}}(p) \big|
 		\right)
@@ -237,7 +241,7 @@ The resulting loss looks like this:
 \]
 This sorts out the pose network optimization, for the depth network it is instead optimized:
 \[
-	\sum_{p_{\mathbf{I}} \, \text{matches} \, p_{\mathbf{J}}} \big| p_{\mathbf{I}} - \mathcal{T} (p_{\mathbf{Q}}) \big|
+	\sum_{p_{\mathbf{I}} \, \text{matches} \, p_{\mathbf{J}}} \big| p_{\mathbf{I}} - \mathcal{T} (p_{\mathbf{J}}) \big|
 \]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,16 +250,27 @@ This sorts out the pose network optimization, for the depth network it is instea
 \subsection{MonoDepth2}
 Quoting Godard et al. from the abstract of \cite{MonoDepth2}: \textit{"We show that a surprisingly simple model, and associated design choices, lead to superior predictions"}.
 In this work they take MonoDepth \cite{MonoDepth} and improve it with clever small tricks without changing the spirit of the method, although adapting it to be trained also on monocular video footage like in \cite{SfMLearner}.
+In fact, in MonoDepth images were labeled as "left" or "right", in here the general distinction is between "source" and "target".
+
 In their edge-aware smoothness loss, the authors substitute $\mathbf{D}$ with its mean normalized value $\mathbf{D} / \text{mean} \mathbf{D}$ to discourage shrinking of the estimated disparity map.
-Next they improve the reconstruction error loss: if $\mathbf{I}_{target}$ is reconstructed from $\mathbf{I}_{source, 1}$ obtaining $\hat{\mathbf{I}}_{target, 1}$ and reconstructed from $\mathbf{I}_{source, 2}$ obtaining $\hat{\mathbf{I}}_{target, 2}$, instead of averaging the two reconstruction losses like $\frac{1}{2}(\mathcal{L}_{rec}(\hat{\mathbf{I}}_{target, 1}(p)$, $\mathbf{I}_{target}(p)) + \mathcal{L}_{rec}(\hat{\mathbf{I}}_{target, 2}(p), \mathbf{I}_{target}(p)))$, it is better to minimize the smallest term between the two because the largest is likely linked to phenomenons like occlusion or out-of-view pixel.
-Usually if something is occluded in a view, it is not in the other! Same thing for out-of-view pixels.
+
+Next they improve the reconstruction error loss: if $\mathbf{I}_{target}$ is reconstructed from $\mathbf{I}_{source, 1}$ obtaining $\hat{\mathbf{I}}_{target, 1}$ and reconstructed from $\mathbf{I}_{source, 2}$ obtaining $\hat{\mathbf{I}}_{target, 2}$, previously the two reconstruction losses were averaged like this:
+\[
+	\text{mean}_{p \in \mathbf{I}_{target}} \frac{1}{2}(\mathcal{L}_{rec}(\hat{\mathbf{I}}_{target, 1}(p), \mathbf{I}_{target}(p)) + \mathcal{L}_{rec}(\hat{\mathbf{I}}_{target, 2}(p), \mathbf{I}_{target}(p)))
+\]
+Though, it is better to minimize the smallest term between the two because the largest is likely linked to phenomenons like occlusion or out-of-view pixel and nothing can be done about it.
+Usually, if something is occluded in a view, it is not in the other!
+Same thing for out-of-view pixels.
 So it is now minimized
 \[
-	min \{ \mathcal{L}_{rec}(\hat{\mathbf{I}}_{target, 1}(p), \mathbf{I}_{target}(p)), \, \mathcal{L}_{rec}(\hat{\mathbf{I}}_{target, 2}(p), \mathbf{I}_{target}(p)) \}
+	\text{mean}_{p \in \mathbf{I}_{target}} \text{min} \{ \mathcal{L}_{rec}(\hat{\mathbf{I}}_{target, 1}(p), \, \mathbf{I}_{target}(p)), \, \mathcal{L}_{rec}(\hat{\mathbf{I}}_{target, 2}(p), \mathbf{I}_{target}(p)) \}
 \]
+In here $\mathcal{L}_{rec}$ represents the photometric error computed pixel-wise.
+Godard et al. use the same error as in MonoDepth through the SSIM and L1 loss.
+
 Another clever improvement Godard et al. make is to apply an auto-masking procedure for stationary pixels.
 Static pixels can correspond to a static camera or to objects moving at the same velocity of the camera.
-If a pixel $p$ is such that $\mathcal{L}_{rec}(\mathbf{I}_{target}, \mathbf{I}_{source})(p)$ is "low", then there are three likely alternatives:
+If a pixel $p$ is such that $\mathcal{L}_{rec}(\mathbf{I}_{target}(p), \mathbf{I}_{source}(p))$ is "low", then there are three likely alternatives:
 \begin{enumerate}
 \item the camera is not moving and that pixel corresponds to a static object
 \item the camera is moving and that pixel corresponds to an object moving in the same direction and speed of the camera
@@ -264,11 +279,14 @@ If a pixel $p$ is such that $\mathcal{L}_{rec}(\mathbf{I}_{target}, \mathbf{I}_{
 The heuristic is to mask out pixels that have this "low" comparison error.
 Godard et al. exclude pixels with comparison error smaller than the reconstruction error:
 \[
-	\text{min}_{source} \{ \mathcal{L}_{rec}(\mathbf{I}_{target}, \mathbf{I}_{source})(p) \}
+	\text{Consider only } p \in \mathbf{I}_{target} \text{ such that: }
+\]\[
+	\mathcal{L}_{rec}(\mathbf{I}_{target}(p), \mathbf{I}_{source}(p))
 		\leq
-	\text{min}_{source} \{ \mathcal{L}_{rec}(\mathbf{I}_{target}, \hat{\mathbf{I}}_{target})(p) \}
+	\mathcal{L}_{rec}(\mathbf{I}_{target}(p), \hat{\mathbf{I}}_{target}(p))
 \]
-Taking the minimum is done also here for the same reasons explained above.
+If multiple source images are used for reconstruction, take the minimum of both members with respect to the sources.
+
 Their observations and tricks continue on the architectural side.
 For instance, they up-sample the lower resolution depth maps returned by their multiscale network instead of decreasing the resolution of the ground truth data during training.
 They also apply reflection padding to input images to decrease border artifacts, as opposed to zero-padding.
@@ -332,7 +350,7 @@ The authors' idea is then to use some higher representation of the image encoura
 For achieving this, Shu et al. employ three networks: DepthNet and PoseNet, as in the previous works, and FeatureNet which is an encoder based on ResNet-50 \cite{ResNet}.
 If $\mathbf{F}$ is the deep multi-channel feature map of the image to reconstruct $\mathbf{I}$ and $\mathbf{F}_{rec}$ the one of the reconstructed image $\mathbf{I}_{rec}$, then the following losses are used:
 \[
-	\mathcal{L}_{rec} = \text{mean}_{p \in \mathbf{F}} \big\| \mathbf{F}(p) - \mathbf{F}_{rec}(p) \big\|_{1}
+	\mathcal{L}_{rec} = \text{mean}_{p \in \mathbf{F}} \big\| \mathbf{F}(p) - \mathbf{F}_{rec}(p) \big\|
 \] \[
 	\mathcal{L}_{dis} = - \text{mean}_{p \in \mathbf{F}} \big\| \nabla^{1} \mathbf{F}(p) \big\|
 \] \[
@@ -343,5 +361,4 @@ $\mathcal{L}_{dis}$ encourages the learned feature maps to have gradients, makin
 Lastly, $\mathcal{L}_{cvt}$ is a regularization term favouring the convergence of the method.
 
 The architecture of FeatDepth is improved in GCNDepth \cite{GCNDepth} by other authors.
-They use a Graph Convolutional Network (GCN) for mapping intermediate decoder feature maps to depth maps.
-They manage to reduce the size of their model of 40\% w.r.t. the FeatDepth.
+They use a Graph Convolutional Network (GCN) for mapping intermediate decoder feature maps to depth maps, managing to reduce the size of their model of 40\% w.r.t. FeatDepth.
