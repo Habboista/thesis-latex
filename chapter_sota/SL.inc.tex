@@ -261,7 +261,7 @@ Find a summary in \ref{table:2}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %        Depth as Classification
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
+\subsection{Cao et al.}
 Cao et al. \cite{depth_as_classification} formulate depth estimation as a pixel-wise classification task proposing a two-stage method.
 Their idea is to discretize depth dividing its range into uniform bins.
 The overall pipeline is illustrated in figure \ref{fig:depth_as_classification}
@@ -333,7 +333,7 @@ This sums up \cite{depth_as_classification}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %        Ordinal Regression
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
+\subsection{Fu et al.}
 Fu et al. \cite{ordinal_regression} continue this line of research by adopting a slightly different approach which proved more effective.
 They formulate depth estimation as an \textit{ordinal regression} problem.
 The formal setting is very similar to the one of Cao et al., I will now illustrate the differences.
@@ -367,10 +367,10 @@ In case $\mathbf{P}_{b}(i, j)$ is above $0.5$ for every $b$, $(i, j)$ can be con
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %               AdaBins
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
+\subsection{AdaBins, LocalBins and ZoeDepth}
 Shariq Farooq Bhat and other researchers worked a lot on single image depth estimation using bin-methods and developed three important works: AdaBins \cite{AdaBins}, LocalBins \cite{LocalBins} and ZoeDepth \cite{ZoeDepth}.
 
-In the first work, Bhat et al. \cite{AdaBins} generalize the ideas from Fu et al. \cite{ordinal_regression}.
+\paragraph{AdaBins} In the first work, Bhat et al. \cite{AdaBins} generalize the ideas from Fu et al. \cite{ordinal_regression}.
 They observe that depth distribution vary to a large extent between different scenes, therefore depth bins must be adapted per image.
 The pipeline is illustrated in figure \ref{fig:adabins}.
 
@@ -426,7 +426,7 @@ This loss, called "bidirectional Chamfer Loss" \cite{AdaBins}, encourages the bi
 %              LocalBins
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In \cite{LocalBins} Bhat et al. notice that depth discretization must be performed locally, pixel-wise, rather than globally.
+\paragraph{LocalBins} In \cite{LocalBins} Bhat et al. notice that depth discretization must be performed locally, pixel-wise, rather than globally.
 In fact, depth values distributions can widely vary across a single image.
 The overall procedure is shown in figure \ref{fig:localbins}.
 
@@ -455,7 +455,7 @@ For further details see \cite{LocalBins}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              ZoeDepth
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Eventually, Bhat et al. \cite{ZoeDepth} refine their ideas for computing depth bins pixel-wise in their work called "ZoeDepth".
+\paragraph{ZoeDepth} Eventually, Bhat et al. \cite{ZoeDepth} refine their ideas for computing depth bins pixel-wise in their work called "ZoeDepth".
 The result is a two-stage method for estimating both relative and metric depth, the overall architecture is shown in figure \ref{fig:zoe_depth}.
 
 % architecture

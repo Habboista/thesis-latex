@@ -42,6 +42,107 @@
   doi={10.1109/CVPR.2017.260}
 }
 
+@article{autopopup1,
+author = {Hoiem, Derek and Efros, Alexei A. and Hebert, Martial},
+title = {Automatic photo pop-up},
+year = {2005},
+issue_date = {July 2005},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {24},
+number = {3},
+issn = {0730-0301},
+url = {https://doi.org/10.1145/1073204.1073232},
+doi = {10.1145/1073204.1073232},
+abstract = {This paper presents a fully automatic method for creating a 3D model from a single photograph. The model is made up of several texture-mapped planar billboards and has the complexity of a typical children's pop-up book illustration. Our main insight is that instead of attempting to recover precise geometry, we statistically model geometric classes defined by their orientations in the scene. Our algorithm labels regions of the input image into coarse categories: "ground", "sky", and "vertical". These labels are then used to "cut and fold" the image into a pop-up model using a set of simple assumptions. Because of the inherent ambiguity of the problem and the statistical nature of the approach, the algorithm is not expected to work on every image. However. it performs surprisingly well for a wide range of scenes taken from a typical person's photo album.},
+journal = {ACM Trans. Graph.},
+month = {jul},
+pages = {577-584},
+numpages = {8},
+keywords = {single-view reconstruction, machine learning, image-based rendering, image segmentation}
+}
+
+@INPROCEEDINGS{autopopup2,
+  author={Hoiem, D. and Efros, A.A. and Hebert, M.},
+  booktitle={Tenth IEEE International Conference on Computer Vision (ICCV'05) Volume 1}, 
+  title={Geometric context from a single image}, 
+  year={2005},
+  volume={1},
+  number={},
+  pages={654-661 Vol. 1},
+  keywords={Layout;Object detection;Computer vision;Surface reconstruction;Cameras;Application software;Image reconstruction;Humans;Solid modeling;Robustness},
+  doi={10.1109/ICCV.2005.107}}
+
+@INPROCEEDINGS{autopopup3,
+  author={Hoiem, D. and Efros, A.A. and Hebert, M.},
+  booktitle={2006 IEEE Computer Society Conference on Computer Vision and Pattern Recognition (CVPR'06)}, 
+  title={Putting Objects in Perspective}, 
+  year={2006},
+  volume={2},
+  number={},
+  pages={2137-2144},
+  keywords={Layout;Object detection;Cameras;Roads;Context modeling;Geometry;Detectors;Computer vision;Robot kinematics;Solid modeling},
+  doi={10.1109/CVPR.2006.232}}
+
+@INPROCEEDINGS{autopopup4,
+  author={Hoiem, Derek and Stein, Andrew N. and Efros, Alexei A. and Hebert, Martial},
+  booktitle={2007 IEEE 11th International Conference on Computer Vision}, 
+  title={Recovering Occlusion Boundaries from a Single Image}, 
+  year={2007},
+  volume={},
+  number={},
+  pages={1-8},
+  keywords={Layout;Computer vision;Humans;Vegetation mapping;Robot vision systems;Navigation;Image segmentation;Displays;Image processing;Biomedical imaging},
+  doi={10.1109/ICCV.2007.4408985}}
+
+@Article{autopopup5,
+author={Hoiem, Derek
+and Efros, Alexei A.
+and Hebert, Martial},
+title={Recovering Surface Layout from an Image},
+journal={International Journal of Computer Vision},
+year={2007},
+month={Oct},
+day={01},
+volume={75},
+number={1},
+pages={151-172},
+abstract={Humans have an amazing ability to instantly grasp the overall 3D structure of a scene---ground orientation, relative positions of major landmarks, etc.---even from a single image. This ability is completely missing in most popular recognition algorithms, which pretend that the world is flat and/or view it through a patch-sized peephole. Yet it seems very likely that having a grasp of this ``surface layout'' of a scene should be of great assistance for many tasks, including recognition, navigation, and novel view synthesis.},
+issn={1573-1405},
+doi={10.1007/s11263-006-0031-y},
+url={https://doi.org/10.1007/s11263-006-0031-y}
+}
+
+
+@INPROCEEDINGS{autopopup6,
+  author={Hoiem, Derek and Efros, Alexei A. and Hebert, Martial},
+  booktitle={2008 IEEE Conference on Computer Vision and Pattern Recognition}, 
+  title={Closing the loop in scene interpretation}, 
+  year={2008},
+  volume={},
+  number={},
+  pages={1-8},
+  keywords={Layout;Image analysis;Surface reconstruction;Feedforward systems;Object detection;Inference algorithms;Robot kinematics;Cameras;Object recognition;Reflectivity},
+  doi={10.1109/CVPR.2008.4587587}}
+
+@InProceedings{VideoCompass,
+author="Ko{\v{s}}eck{\'a}, Jana
+and Zhang, Wei",
+editor="Heyden, Anders
+and Sparr, Gunnar
+and Nielsen, Mads
+and Johansen, Peter",
+title="Video Compass",
+booktitle="Computer Vision --- ECCV 2002",
+year="2002",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="476--490",
+abstract="In this paper we describe a flexible approach for determining the relative orientation of the camera with respect to the scene. The main premise of the approach is the fact that in man-made environments, the majority of lines is aligned with the principal orthogonal directions of the world coordinate frame. We exploit this observation towards efficient detection and estimation of vanishing points, which provide strong constraints on camera parameters and relative orientation of the camera with respect to the scene.",
+isbn="978-3-540-47979-6"
+}
+
+
 ##############################################################
 #                        SL
 ##############################################################
@@ -418,7 +519,8 @@
   number={3},
   pages={1623-1637},
   keywords={Training;Estimation;Three-dimensional displays;Cameras;Videos;Measurement;Motion pictures;Monocular depth estimation;single-image depth prediction;zero-shot cross-dataset transfer;multi-dataset training},
-  doi={10.1109/TPAMI.2020.3019967}
+  doi={10.1109/TPAMI.2020.3019967},
+  url={https://github.com/isl-org/MiDaS}
 }
 
 @article{PatchFusion,
@@ -427,14 +529,16 @@
   year={2023},
   eprint={2312.02284},
   archivePrefix={arXiv},
-  primaryClass={cs.CV}
+  primaryClass={cs.CV},
+  url={https://zhyever.github.io/patchfusion/},
 }
 
 @InProceedings{Marigold,
     title={Repurposing Diffusion-Based Image Generators for Monocular Depth Estimation},
     author={Bingxin Ke and Anton Obukhov and Shengyu Huang and Nando Metzger and Rodrigo Caye Daudt and Konrad Schindler},
     booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-    year={2024}
+    year={2024},
+    url={https://marigoldmonodepth.github.io/},
 }
 
 ##############################################################
