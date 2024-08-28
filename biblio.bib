@@ -30,6 +30,74 @@
 #                        CLASSIC
 ##############################################################
 
+@inproceedings{saxena1,
+author = {Michels, Jeff and Saxena, Ashutosh and Ng, Andrew Y.},
+title = {High speed obstacle avoidance using monocular vision and reinforcement learning},
+year = {2005},
+isbn = {1595931805},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1102351.1102426},
+doi = {10.1145/1102351.1102426},
+abstract = {We consider the task of driving a remote control car at high speeds through unstructured outdoor environments. We present an approach in which supervised learning is first used to estimate depths from single monocular images. The learning algorithm can be trained either on real camera images labeled with ground-truth distances to the closest obstacles, or on a training set consisting of synthetic graphics images. The resulting algorithm is able to learn monocular vision cues that accurately estimate the relative depths of obstacles in a scene. Reinforcement learning/policy search is then applied within a simulator that renders synthetic scenes. This learns a control policy that selects a steering direction as a function of the vision system's output. We present results evaluating the predictive ability of the algorithm both on held out test data, and in actual autonomous driving experiments.},
+booktitle = {Proceedings of the 22nd International Conference on Machine Learning},
+pages = {593-600},
+numpages = {8},
+location = {Bonn, Germany},
+series = {ICML '05}
+}
+
+@inproceedings{saxena2,
+author = {Saxena, Ashutosh and Chung, Sung H. and Ng, Andrew Y.},
+title = {Learning depth from single monocular images},
+year = {2005},
+publisher = {MIT Press},
+address = {Cambridge, MA, USA},
+abstract = {We consider the task of depth estimation from a single monocular image. We take a supervised learning approach to this problem, in which we begin by collecting a training set of monocular images (of unstructured outdoor environments which include forests, trees, buildings, etc.) and their corresponding ground-truth depthmaps. Then, we apply supervised learning to predict the depthmap as a function of the image. Depth estimation is a challenging problem, since local features alone are insufficient to estimate depth at a point, and one needs to consider the global context of the image. Our model uses a discriminatively-trained Markov Random Field (MRF) that incorporates multiscale local- and global-image features, and models both depths at individual points as well as the relation between depths at different points. We show that, even on unstructured scenes, our algorithm is frequently able to recover fairly accurate depthmaps.},
+booktitle = {Proceedings of the 18th International Conference on Neural Information Processing Systems},
+pages = {1161-1168},
+numpages = {8},
+location = {Vancouver, British Columbia, Canada},
+series = {NIPS'05}
+}
+
+@inproceedings{saxena3,
+author = {Saxena, Ashutosh and Schulte, Jamie and Ng, Andrew Y.},
+title = {Depth estimation using monocular and stereo cues},
+year = {2007},
+publisher = {Morgan Kaufmann Publishers Inc.},
+address = {San Francisco, CA, USA},
+abstract = {Depth estimation in computer vision and robotics is most commonly done via stereo vision (stereopsis), in which images from two cameras are used to triangulate and estimate distances. However, there are also numerous monocular visual cues--such as texture variations and gradients, defocus, color/haze, etc. --that have heretofore been little exploited in such systems. Some of these cues apply even in regions without texture, where stereo would work poorly. In this paper, we apply a Markov Random Field (MRF) learning algorithm to capture some of these monocular cues, and incorporate them into a stereo system. We show that by adding monocular cues to stereo (triangulation) ones, we obtain significantly more accurate depth estimates than is possible using either monocular or stereo cues alone. This holds true for a large variety of environments, including both indoor environments and unstructured outdoor environments containing trees/forests, buildings, etc. Our approach is general, and applies to incorporating monocular cues together with any off-the-shelf stereo system.},
+booktitle = {Proceedings of the 20th International Joint Conference on Artifical Intelligence},
+pages = {2197-2203},
+numpages = {7},
+location = {Hyderabad, India},
+series = {IJCAI'07}
+}
+
+@INPROCEEDINGS{saxena4,
+  author={Saxena, Ashutosh and Sun, Min and Ng, Andrew Y.},
+  booktitle={2007 IEEE 11th International Conference on Computer Vision}, 
+  title={Learning 3-D Scene Structure from a Single Still Image}, 
+  year={2007},
+  volume={},
+  number={},
+  pages={1-8},
+  keywords={Layout;Markov random fields;Supervised learning;Sun;Computer science;Inference algorithms;Art;Rendering (computer graphics);Internet;Humans},
+  doi={10.1109/ICCV.2007.4408828}}
+
+@ARTICLE{saxena5,
+  author={Saxena, Ashutosh and Sun, Min and Ng, Andrew Y.},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
+  title={Make3D: Learning 3D Scene Structure from a Single Still Image}, 
+  year={2009},
+  volume={31},
+  number={5},
+  pages={824-840},
+  keywords={Layout;Image segmentation;Markov random fields;Computer vision;Sun;Supervised learning;Art;Rendering (computer graphics);Internet;Large-scale systems;Machine learning;monocular vision;learning depth;vision and scene understanding;scene analysis;depth cues.;Vision and Scene Understanding;Scene Analysis;Depth cues;Statistical;Computer vision;Virtual reality;Image-based rendering;Machine learning},
+  doi={10.1109/TPAMI.2008.132}}
+
+
 @INPROCEEDINGS{IM2CAD,
   author={Izadinia, Hamid and Shan, Qi and Seitz, Steven M.},
   booktitle={2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 
@@ -41,6 +109,56 @@
   keywords={Solid modeling;Three-dimensional displays;Computational modeling;Databases;Estimation;Image reconstruction},
   doi={10.1109/CVPR.2017.260}
 }
+
+@ARTICLE{DepthTransfer,
+  author={Karsch, Kevin and Liu, Ce and Kang, Sing Bing},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
+  title={Depth Transfer: Depth Extraction from Video Using Non-Parametric Sampling}, 
+  year={2014},
+  volume={36},
+  number={11},
+  pages={2144-2158},
+  keywords={Databases;Estimation;Optimization;Cameras;Optical imaging;Three-dimensional displays;Image reconstruction;Depth estimation;monocular depth;motion estimation;data-driven;2D-to-3D},
+  doi={10.1109/TPAMI.2014.2316835}
+}
+
+@inproceedings{konrad1,
+author = {J. Konrad and G. Brown and M. Wang and P. Ishwar and C. Wu and D. Mukherjee},
+title = {{Automatic 2D-to-3D image conversion using 3D examples from the internet}},
+volume = {8288},
+booktitle = {Stereoscopic Displays and Applications XXIII},
+editor = {Andrew J. Woods and Nicolas S. Holliman and Gregg E. Favalora},
+organization = {International Society for Optics and Photonics},
+publisher = {SPIE},
+pages = {82880F},
+keywords = {2D-to-3D conversion, 3D content generation, Stereoscopic 3D, YouTube 3D, SIFT flow, Cross-bilateral filtering},
+year = {2012},
+doi = {10.1117/12.910601},
+URL = {https://doi.org/10.1117/12.910601}
+}
+
+@INPROCEEDINGS{konrad2,
+  author={Konrad, Janusz and Wang, Meng and Ishwar, Prakash},
+  booktitle={2012 IEEE Computer Society Conference on Computer Vision and Pattern Recognition Workshops}, 
+  title={2D-to-3D image conversion by learning depth from examples}, 
+  year={2012},
+  volume={},
+  number={},
+  pages={16-22},
+  keywords={Databases;Image edge detection;Cameras;Dictionaries;Smoothing methods;Measurement;Humans},
+  doi={10.1109/CVPRW.2012.6238903}}
+
+@ARTICLE{SIFTFlow,
+  author={Liu, Ce and Yuen, Jenny and Torralba, Antonio},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
+  title={SIFT Flow: Dense Correspondence across Scenes and Its Applications}, 
+  year={2011},
+  volume={33},
+  number={5},
+  pages={978-994},
+  keywords={Pixel;Optical imaging;Visualization;Databases;Belief propagation;Complexity theory;Object recognition;Scene alignment;dense scene correspondence;SIFT flow;coarse to fine;belief propagation;alignment-based large database framework;satellite image registration;face recognition;motion prediction for a single image;motion synthesis via object transfer.},
+  doi={10.1109/TPAMI.2010.147}}
+
 
 @article{autopopup1,
 author = {Hoiem, Derek and Efros, Alexei A. and Hebert, Martial},
