@@ -1,0 +1,38 @@
+%-------------------------------------------------------------------
+\chapter{Corpus}
+\label{c:corpus}
+%-------------------------------------------------------------------
+
+%\epigraph{\enquote{I believe that inside every tool is a hammer.}}{\emph{Adam Savage}}
+
+In this chapter I will discuss my theoretical investigations about single image depth estimation and the more broad aspect of interpretability.
+
+\section{Deep Learning and Interpretability}
+Since the advent of machine learning (ML) and artificial intelligence (AI), there has been a paradigm shift in solving problems in a lot of fields.
+Instead of designing an algorithm that directly solves a given task, a learner is delegated to find a good-enough solution in a pool of possible solutions by solving an optimization problem defined on a set of data points \cite{ML}.
+Among all, deep learning (DL) techniques are the most successful ones and have a much superior performance than the statistical learning counterparts in the most challenging tasks (vision, language, autonomous agents, …), provided data is enough.
+Deep learning is more scalable w.r.t. dataset size and data dimensionality than statistical learning techniques are and is better suited for exploiting the existing hardware, which in turn was improved for the purpose during last years.
+This made DL solutions successful, popular and spreading to more and more research fields, supported by an ever-growing data and hardware availability \cite{DL_overview}.
+
+Although deep learning models are very effective, it is very difficult for a human (experts included) to understand how these models come up with their outputs due to their large sizes, the (general) high-dimensionality of their inputs and training algorithms.
+For they are considered black boxes \cite{DL_overview}.
+Indeed, humans understand which mathematical operations DL models carry out in order to compute numerical outputs, but they are not capable of intuitively interpreting those computations so that they represent something meaningful for them.
+But why should humans be interested in understanding these models? 
+If a model has been experimentally proven to be reliable, it is not involved in critical scenarios or, it has a limited impact on people and things, then not understanding its functioning doesn't raise concerns.
+Yet, there are a lot of applicative contexts in which this is relevant, e.g. autonomous driving \cite{Zablocki2022}, Industry 4.0 \cite{XAI_industry} and healthcare \cite{XAI_healthcare}.
+More generally, when the formal numerical objectives and metrics of a learning algorithm are not rich enough to describe real-world deployment settings, the need for a more thorough understanding arises \cite{Lipton}.
+This, combined with the integration of AI in everyday life, results in society, ethics and legislation demanding a new generation of AI whose functioning is more transparent.
+This trend is also observed in the rising number of publications during the last decade \cite{XAI_review} in the field of "eXplainable" Artificial Intelligence (XAI) which addresses this exact matter, particularly in relation to ML and DL.
+
+The main property of an AI system studied by this field is its \textit{interpretability}.
+This term is not rigorously defined and each author gives his/her own specific definition \cite{XAI_review}.
+For example Miller \cite{Miller} defines interpretability as the degree to which humans can understand the cause of a decision made by an artificial intelligent system (its numerical output). 
+While, Kim et al. \cite{examples_enough} give a more operative definition of interpretability as the capacity of humans to correctly and efficiently predict the AI system results, yet a lot of other definitions and characterizations have been proposed, e.g. see \cite{Lipton}.
+Without limiting the discussion to a precise definition, interpretability can be thought as an intuitive understandability of an AI system and the way it produces predictions.
+XAI addresses the problem of developing methods for generating explanations accounting for such predictions (post-hoc methods) or design principles to build systems intrinsically more interpretable (ante-hoc methods).
+
+\section{Single Image Depth Estimation and Interpretability}
+
+\section{Thoughts on Interpretability}
+
+\section{My approach to Interpretability}

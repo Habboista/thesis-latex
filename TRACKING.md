@@ -34,9 +34,9 @@ Chapter 2
 - Content: References to existing works and papers.
 
 Chapter 3
-- Title: Tools and Frameworks
-- File: `chapter_tools.inc.tex`
-- Content: List of tools and frameworks used in the thesis.
+- Title: Corpus
+- File: `chapter_corpus.inc.tex`
+- Content: What I did.
 
 Chapter 4
 - Title: Implementation
