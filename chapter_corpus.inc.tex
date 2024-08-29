@@ -5,11 +5,9 @@
 
 %\epigraph{\enquote{I believe that inside every tool is a hammer.}}{\emph{Adam Savage}}
 
-In this chapter I will discuss my theoretical investigations about single image depth estimation and the more broad aspect of interpretability.
-
 \section{Deep Learning and Interpretability}
 Since the advent of machine learning (ML) and artificial intelligence (AI), there has been a paradigm shift in solving problems in a lot of fields.
-Instead of designing an algorithm that directly solves a given task, a learner is delegated to find a good-enough solution in a pool of possible solutions by solving an optimization problem defined on a set of data points \cite{ML}.
+Instead of designing an algorithm that directly solves a given task, a learner is delegated to find a good-enough solution in a pool of possible solutions by solving an optimization problem defined on a set of data points \cite{ML_book}.
 Among all, deep learning (DL) techniques are the most successful ones and have a much superior performance than the statistical learning counterparts in the most challenging tasks (vision, language, autonomous agents, …), provided data is enough.
 Deep learning is more scalable w.r.t. dataset size and data dimensionality than statistical learning techniques are and is better suited for exploiting the existing hardware, which in turn was improved for the purpose during last years.
 This made DL solutions successful, popular and spreading to more and more research fields, supported by an ever-growing data and hardware availability \cite{DL_overview}.
@@ -25,11 +23,64 @@ This, combined with the integration of AI in everyday life, results in society, 
 This trend is also observed in the rising number of publications during the last decade \cite{XAI_review} in the field of "eXplainable" Artificial Intelligence (XAI) which addresses this exact matter, particularly in relation to ML and DL.
 
 The main property of an AI system studied by this field is its \textit{interpretability}.
-This term is not rigorously defined and each author gives his/her own specific definition \cite{XAI_review}.
+This term is not rigorously defined since each author gives his/her own specific definition \cite{XAI_review}.
 For example Miller \cite{Miller} defines interpretability as the degree to which humans can understand the cause of a decision made by an artificial intelligent system (its numerical output). 
 While, Kim et al. \cite{examples_enough} give a more operative definition of interpretability as the capacity of humans to correctly and efficiently predict the AI system results, yet a lot of other definitions and characterizations have been proposed, e.g. see \cite{Lipton}.
 Without limiting the discussion to a precise definition, interpretability can be thought as an intuitive understandability of an AI system and the way it produces predictions.
 XAI addresses the problem of developing methods for generating explanations accounting for such predictions (post-hoc methods) or design principles to build systems intrinsically more interpretable (ante-hoc methods).
+
+There exist some intrinsically interpretable models such as sparse linear regression, shallow decision trees or K-nearest neighbors \cite{molnar2022} \cite{XAI_review} that because of their limited size and mathematical complexity are easily understandable by a human expert but suffer from low accuracy, especially when tackling complex tasks.
+In fact, a general trade-off between accuracy and transparency is known to exist in AI.
+XAI studies models that traded off transparency for high accuracy by developing methods for clarifying their behavior after training has been performed (post-hoc interpretability methods), or aims at designing models that try to alleviate the limitations of that trade-off in advance (ante-hoc interpretability methods), for instance by being trained to return both a prediction and an explanation for it. 
+
+There are other criteria for classifying interpretability criteria \cite{molnar2022}.
+Distinctions can be made based on what kind of result an interpretability method returns.
+For example there are methods that return counterfactual explanations for justifying a prediction.
+If the model $f$ on the input $x$ returned the output $y = f(x)$, a counterfactual explanation would be an input $x'$ close to $x$ such that $f(x') = y' \neq y$ \cite{Zablocki2022}.
+This explanation attempts to answer the question “What should have happened instead of $x$ so that $y'$ occurred?” by either finding $x'$ in the training dataset or by generating it trough generative AI techniques \cite{Zablocki2022}.
+Some methods return a natural language explanation, this is the case for Xu et al. \cite{9157111} who developed a DL model for an autonomous driving toy setting producing both an output and a natural language explanation for it.
+This was made possible thanks to annotated examples in the dataset employed. 
+
+Another distinction can be drawn between so-called model-specific and model-agnostic methods \cite{molnar2022}.
+Some interpretability methods are developed for a specific family of ML or DL models (e.g. Deconvnet \cite{Deconvnet}) leveraging on their specific mathematical structure and are thus named model-specific methods.
+Other methods treat the model as a black box to probe, trying to model its behavior in a simpler way, an example of this is LIME \cite{LIME} which tries to locally linearly approximate the model by fitting a sparse linear regression model.
+The fitted transparent model constitutes the explanation.
+
+Finally, interpretability methods can be classified as local or global.
+Local methods address interpretability of a single prediction of the studied AI model (i.e. around a single data point $x$), while global methods take into account the overall model behavior.
+The above-mentioned methods are local.
+A global method can consist in a feature selection procedure for identifying a subset of the input features that have more predictive power w.r.t. the others \cite{molnar2022}.
+Global methods are more common in ML methods rather than DL ones. 
+
+Lipton \cite{Lipton} identifies five aspects of an ML model on which XAI can shed light on.
+These are:
+\begin{itemize}
+\item{\textbf{Trust}: If confidence that the model properly performs in real-world scenarios is 
+required and numerical assessments of its performance are not sufficiently 
+expressive, then trust has to be built in other ways, a more deep understanding of 
+the model helps in this direction. Trust is especially needed in critical applications 
+like in medical decision-making \cite{XAI_healthcare} and autonomous driving \cite{Zablocki2022}, where extensive 
+testing is difficult to achieve due to safety, economical or legal concerns.}
+\item{\textbf{Causality}:
+Especially in scientific research, where ML models are a way to extract information about the world, relations inferred by the these methods are not guaranteed to reflect real causal relationships.
+By understanding the fitted models scientists could gain new insights and test them through new experiments.
+}
+\item{\textbf{Transferability}:
+It is common that training settings do not match deployment environments due to their complexity or non stationarity.
+Robustness to changes is a desirable property in this case and particularly desired in industrial settings \cite{XAI_industry}. 
+Understanding the AI model can serve the purpose of inspecting how suitable it is for deployment.
+}
+\item{\textbf{Informativeness}:
+Even though understanding an artificial intelligence model is sometimes very difficult (in particular neural networks), trying to do it can nevertheless convey useful information.
+For instance, an explanation to the output of a diagnosis model can highlight clinical details missed by a doctor \cite{XAI_healthcare}.
+}
+\item{\textbf{Fair and Ethical decision-making}:
+Since ML models learn from data and data reflect society biases, these are likely to be biased as well.
+For example this happens for language models, algorithms for recruitment or for granting loans. 
+Only a thorough investigation of the AI system functioning is able to reveal these biases.
+}
+\end{itemize}
+By inspecting an AI model with the above-mentioned interpretability techniques, a human can acknowledge the presence or absence of properties related to these five aspects.
 
 \section{Single Image Depth Estimation and Interpretability}
 
