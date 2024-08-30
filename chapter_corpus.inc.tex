@@ -83,6 +83,209 @@ Only a thorough investigation of the AI system functioning is able to reveal the
 By inspecting an AI model with the above-mentioned interpretability techniques, a human can acknowledge the presence or absence of properties related to these five aspects.
 
 \section{Single Image Depth Estimation and Interpretability}
+There are a lot of works about interpretability of neural networks for vision, but the most studied tasks are image classification, object detection and image generation.
+Despite the growing interest for monocular depth estimation, driven also by its relevance in robotics and autonomous driving applications, its interpretability side is yet to be deepened.
+I will review here three relevant works on interpretability of single image depth estimation models that tackles the problem from different perspective:
+\begin{itemize}
+    \item{Dijk et al. \cite{Dijk} probe neural depth estimators in search for correlation with human visual cues;}
+    \item{Hu et al. \cite{Hu} develop a (neural) method for visualizing relevant pixels for the estimation process;}
+    \item{You et al. \cite{towards_interpretable} formulate a regularization term aiming at both measuring and increasing interpretability of the models.}
+\end{itemize}
+
+\subsection{Dijk et al.}
+Depth perceptions in humans has been widely studied.
+Human visual depth cues associated with full scene understanding by humans are divided into primary cues and secondary ones \cite{monocular2024}.
+The primary cues, as reported in \cite{monocular2024}, are:
+\begin{itemize}
+    \item{
+        \textit{Relative size} refers to the apparent difference in the area occupied by the projection of objects of physically similar size on the retina.
+        In other words, between two similar objects, the one that seems smaller is farther from the observer.
+    }
+    \item{
+        \textit{Relative density} is detected when there is a cluster of similar objects or textures.
+        As the distance from the observer increases, the objects appear to be closer to each other and the textures become denser.
+    }
+    \item{
+        \textit{Height in the visual field} is connected with the relation of the bases of objects, assuming the presence of a ground plane and the absence of a ceiling.
+        Specifically, objects at a greater distance from the observer tend to appear closer to the horizon line.
+    }
+    \item{
+        \textit{Aerial perspective}  appears when the air has a high concentration of moisture, pollution, or both, and the objects in the distance become bluer, have less contrast, or both in comparison to those in the foreground.
+    }
+    \item{
+        \textit{Motion Perspective} is the phenomenon that appears when there is relative motion between the observer and observed objects.
+        Objects that appear to be moving faster are closer to the observer.
+    }
+    \item{
+        \textit{Convergence} is connected with the angle between the optical axes of the two eyes.
+        If an object is far from the observer, the optical axes tend to be parallel and the angle between them is close to zero degrees.
+        As the object distance decreases, the two axes converge to a point on the object.
+    }
+    \item{
+        \textit{Accommodation} is the eye function in which the lens (which is essentially an asymmetric biconvex lens) changes its shape to enable focusing at different distances.
+    }
+    \item{
+        \textit{Binocular Disparity} the bases for what is called stereo vision, is the difference in the location of an observed object in the two eyes and only has meaning if more than one viewing sensors (eyes in this case) are available.
+    }
+\end{itemize}
+Secondary cues are instead texture gradients, linear perspective, brightness and shading, kinetic depth, kinetic occlusion, and gravity.
+These cues are “secondary” because they are either a combination of the main or they are incorrectly taken into account.
+Secondary cues are particularly relevant for monocular depth estimation since the primary cues mainly rely on both of the eyes.
+An illustration of some of these cues can be found in figure \ref{fig:cues}.
+
+% human depth cues
+\begin{figure}
+    \centering
+    \includegraphics[width=1.\textwidth]{figs/cues}
+    \caption{
+        Image from \cite{monocular2024}. Visual depth cues: (a) occlusion, (b) relative size, (c) height in the visual field, (d) relative density, (e) aerial perspective, (f) binocular disparity, (g) accommodation, (h) convergence, and (i) motion perspective.
+        In cases (a)-(e) and (i) left side is the 3D representation of two objects and the right side is the corresponding 2D projection attained by a monocular observer.
+        \label{fig:cues}
+    }
+\end{figure}
+
+In \cite{Dijk}, Dijk et al. investigate the use of apparent size of objects and their position in the image by neural model estimating depth from single image.
+They focus only on these cues since they argue that in the KITTI dataset, which is their test ground, the others are not relevant.
+For instance, aerial perspective is not observed in KITTI images due to relatively low depth values while on a dataset like Cityscapes it is an observable atmospheric effect.
+
+Given an image depicting an object of well known size and lying on the ground, it is possible to estimate its depth from its apparent size or its position w.r.t. the horizon.
+Camera pose and parameters must be known to this extent.
+In the first case, the object apparent size is inversely proportional to its depth, while in the second case the higher the object appears in the image (i.e. closer to the horizon line), the farther it is.
+Depth values estimated in these two ways do not necessarily coincide.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.\textwidth]{figs/object_disappearing}
+    \caption{
+        Image from \cite{Dijk}.
+        Objects that are not found in the training set are not reliably detected if hard-pasted into the image.
+        \label{fig:object_disappearing}
+    }
+\end{figure}
+
+The authors of the papers use this fact to probe the network and measure the variation in depth across a set of hand-crafted examples.
+They put a car of fixed size in different points of the image, corresponding to different depth points in real-world, and also put the same care in a fixed spot but varying its size.
+What Dijk et al. observe is that neural networks rely primarily on the vertical position of objects rather than their apparent size \cite{Dijk}.
+This is due to the fact that the depth of the manually inserted car was independent on its size, but it seemed to be completely determined by its vertical position.
+
+The use of vertical position as a depth cue implies that the considered networks have some knowledge of the camera pose.
+Since the KITTI dataset exhibits an approximately constant camera pose (except for some frame where the recording car bumps into some sloped terrain), a natural question is whether the network assumes the camera pose constant or it estimates it image-wise.
+
+Again, the authors design some experiments that show something in between: the camera pose is generally under-estimated when either a pitch or a roll in the camera happens.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.\textwidth]{figs/object_appearing}
+    \caption{
+        Image from \cite{Dijk}.
+        A shadow is added to the bottom of the objects.
+        They are detected, although their shape is not properly recognized.
+        \label{fig:object_appearing}
+    }
+\end{figure}
+
+The last matter Dijk et al. investigate is object recognition.
+A first focus is put onto color and texture and, by passing to the networks images with altered coloring and/or textures, they observed that depth estimation models seem to be invariant to image coloring as long as texture is preserved.
+More interestingly, they studied how the networks detect obstacles.
+They observed the following strong bias of models trained on the KITTI dataset: objects that cast a strong dark shadow on the ground are detected and their depth is given by the position of their shadow (coherently with what observed in the experiments on depth cues).
+In figure \ref{fig:object_disappearing} it can be seen that the presence of new objects is completely ignored in the respective depth map.
+Instead, in figure \ref{fig:object_disappearing}, after the adding of theirs shadows, the considered objects appear in the depth map.
+
+\subsection{Hu et al.}
+Hu et al. \cite{Hu} investigate single image depth estimation models by attempting to visualize which pixels were relevant for the prediction.
+As they point out, there are popular and arguably useful methods for producing visual explanations of image classification models predictions such as CAM \cite{CAM} and GradCAM \cite{GradCAM}, but they cannot be directly applied to CNNs performing depth estimation.
+This holds true also for other explainability methods.
+
+Thus, the authors employ another approach for visualization.
+They formulate the problem of identifying relevant pixels as a problem of sparse optimization \cite{Hu}.
+The underlying assumption made in this work is that  CNNs can infer depth map equally well from a properly selected subset of pixels of the input image.
+Let's call $\mathbf{I}$ the input RGB image tensor of shape $H \times W \times 3$, $f_{pred}$ is the network and $\mathbf{Z} = f_{pred} ( \mathbf{I} )$ is the predicted depth map.
+The objective is to specify a mask $\mathbf{M}$, that is a binary tensor of shape $H \times W \times 1$ that specifies which pixels are important in the image.
+$\mathbf{M}(p) = 1$ means that $p$ is relevant for predicting the depth on that image, $\mathbf{M}(p) = 0$ otherwise.
+By "relevant", Hu et al. mean that $f_{pred} (\mathbf{I}) \approx f_{pred} (\mathbf{I} \, \odot \, \mathbf{M})$, where $\mathbf{I} \, \odot \, \mathbf{M}$ is performed by tensor broadcasting.
+Other works tried this same approach for producing useful relevant-pixels visualization for other computer vision tasks.
+The main problem is how to find a suitable mask that is meaningful to humans.
+Regularization terms constraining the mask can be specified for achieving this, but the choice here is to produce the mask through another neural network, constraining it to a certain manifold specified by the new model.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.\textwidth]{figs/hu}
+    \caption{
+        Masking method from \cite{Hu}.
+        Notation is different: $G$ corresponds to $f_{mask}$, $N$ to $f_{pred}$ and $\hat{Y}$ to $\hat{\mathbf{Z}}$.
+        \label{fig:hu}
+    }
+\end{figure}
+
+Let's call $f_{mask}$ the neural network that takes as input the image $\mathbf{I}$ and outputs the mask, formally $\mathbf{M} = f_{mask}(\mathbf{I})$.
+A representation of the pipeline can be found in figure \ref{fig:hu}.
+For making things differentiable, the mask is treated as a continuous object with values in $[0, 1]$.
+The continuous masks will be thresholded during the visualization phase.
+The network $f_{pred}$ is frozen during the training of network $f_{mask}$ and the loss function used is:
+\[
+    \mathcal{L}_{dif} (\mathbf{Z}, \, \hat{\mathbf{Z}}) +
+    \lambda \frac{1}{HW} \big\| \mathbf{M} \big\|_{1}
+\]
+Where $\hat{\mathbf{Z}} = f_{pred}(\mathbf{I} \, \odot \, \mathbf{M})$, $\lambda$ a hyperparameter and $\mathcal{L}_{dif}$ is a measure of difference between the two predicted depth map.
+
+By visually investigating the obtained masks, Hu et al. discover that the mask tend to be similar to the edge map of the image.
+Though there are differences.
+First: not all edges are relevant for depth estimation, it can be seen in the first image of the figure \ref{fig:pixel_relevance} that edges corresponding to white striped on the street are masked out.
+Second: masks tend to be "thicker" than edge maps, in the sense that there are some filled regions.
+In the case of the KITTI dataset (as depicted in the figure \ref{fig:pixel_relevance}), the region corresponding to the vanishing points of the scene seem to be particularly important for the model considered.
+The authors performed various experiment also on the NYU-v2 dataset and by varying the hyperparameter $\lambda$ which controls the sparseness of the mask.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.\textwidth]{figs/pixel_relevance}
+    \caption{
+        Masks from \cite{Hu}.
+        Top row: original images from KITTI.
+        Middle row: edge maps.
+        Bottom row: predicted masks.
+        \label{fig:pixel_relevance}
+    }
+\end{figure}
+
+\subsection{You et al.}
+A more recent work is that of You et al. \cite{towards_interpretable}, with a title ("Towards Interpretable Deep Networks for Monocular Depth Estimation") very similar to the one of my thesis...
+In their work they try to quantify the interpretability of neural networks for monocular depth estimation by measuring depth selectivity of their units.
+They also propose a regularization term for training such networks that enhance their interpretability, as defined by them, and do not harm performance.
+
+The main idea is to measure the depth selectivity of deep feature maps channels.
+Namely, the tendency of a channel to have high activation in correspondence of pixels associated to a specified depth range.
+
+Formally, consider an input image $\mathbf{I}$, the ground truth depth map $\mathbf{Z}^{*}$ and the intermediate feature maps $\mathbf{F}_{l}$ labeled by the respective layer $l$.
+Each feature map tensor has shape $H_{l} \times W_{l} \times C_{l}$, as $l$ increases (i.e. deeper feature maps are considered) $H_{l}$ and $W_{l}$ decrease and $C_{l}$ increases.
+You et al. consider the "response" $R_{l, c}^{b}$ of a certain channel $c$ at a certain depth $l$ w.r.t. a depth range $b$.
+In order to do so, first the depth range is divided into $B$ (uniform) bins.
+Second, given a certain input-output pair $(\mathbf{I}, \, \mathbf{Z}^{*})$ a mask that identifies which pixels fall into the $b$th-bin is defined:
+\[
+    \mathbf{M}_{b}(i, \, j) \, = \, \begin{cases}
+        1 & \text{ if } \mathbf{Z}^{*}(i, \, j) \in b \text{th-bin} \\
+        0 & \text{ otherwise}
+    \end{cases}
+\]
+Now, to get the response $R_{l, c}^{b}$ of the channel $c$ at depth $l$ with respect to the depth range $b$, the $c$th-channel of the feature map $\mathbf{F}_{l}$ is averaged by weighting it with the computed mask $\mathbf{M}_{b}$.
+Before computing such a weighted average, the $c$th-channel of the feature map $\mathbf{F}_{l}$, of shape $H_{l} \times W_{l}$, is up-sampled to $\mathbf{F}_{l, c}^{\uparrow}$ of shape $H \times W$.
+The response is averaged across the whole dataset to get the final response $R_{l, c}^{b}$.
+
+Hence, a response is a number. The higher the number and the more probable it is for neurons at channel $c$ at depth $l$ to fire in correspondence of pixels of depth in the $b$th bin.
+A channel is depth selective if it fires only w.r.t. a certain depth bin.
+To quantitatively measure the depth selectivity of a channel $c$ at depth $l$, $DS_{l, c}$, the authors use a formula that comes from neuroscience \cite{towards_interpretable}.
+Some preliminary definitions:
+\[
+    R_{l, c}^{max} = \text{max}_{b \in [B]} R_{l, c}^{b}
+\]\[
+    \bar{R}_{l, c}^{-max} = \text{mean}_{R_{l, c}^{b} \neq R_{l, c}^{max}} R_{l, c}^{b}
+\]
+Thus the depth selectivity is defined as:
+\[
+    DS_{l, c} = \frac
+        {|R_{l, c}^{max}| - |\bar{R}_{l, c}^{-max}|}
+        {|R_{l, c}^{max}| + |\bar{R}_{l, c}^{-max}|}
+\]
 
 \section{Thoughts on Interpretability}
 
