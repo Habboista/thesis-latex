@@ -249,7 +249,7 @@ The authors performed various experiment also on the NYU-v2 dataset and by varyi
 \end{figure}
 
 \subsection{You et al.}
-A more recent work is that of You et al. \cite{towards_interpretable}, with a title ("Towards Interpretable Deep Networks for Monocular Depth Estimation") very similar to the one of my thesis...
+A more recent work is that of You et al. \cite{towards_interpretable}\footnote{With a title ("Towards Interpretable Deep Networks for Monocular Depth Estimation") very similar to the one of my thesis...}.
 In their work they try to quantify the interpretability of neural networks for monocular depth estimation by measuring depth selectivity of their units.
 They also propose a regularization term for training such networks that enhance their interpretability, as defined by them, and do not harm performance.
 
@@ -278,7 +278,7 @@ Some preliminary definitions:
 \[
     R_{l, c}^{max} = \text{max}_{b \in [B]} R_{l, c}^{b}
 \]\[
-    \bar{R}_{l, c}^{-max} = \text{mean}_{R_{l, c}^{b} \neq R_{l, c}^{max}} R_{l, c}^{b}
+    \bar{R}_{l, c}^{-max} = \text{mean}_{R_{l, c}^{b} \neq \, R_{l, c}^{max}} \, R_{l, c}^{b}
 \]
 Thus the depth selectivity is defined as:
 \[
@@ -287,6 +287,174 @@ Thus the depth selectivity is defined as:
         {|R_{l, c}^{max}| + |\bar{R}_{l, c}^{-max}|}
 \]
 
+$DS_{l, c}$ ranges in $[0, 1]$ and the higher, the more selective channel $c$ in layer $l$ is.
+The authors measure the responses of some relevant layers of a pre-trained model for depth estimation.
+A graph can be seen in figure \ref{fig:selectivity}.
+The mean depth selectivity of the model from which the responses were measured is 0.46.
+The mean depth selectivity of a random assignment of depths is 0.3, hence there is some minimal depth selectivity also in models trained without additional constraints.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{figs/selectivity}
+    \caption{
+        Depth selectivity of a trained neural network for depth estimation.
+        Histograms of $R_{l,c}^{b}$ for certain channels (called "units" in the picture) and layers (MFF and D are the names of the layers in the considered architecture) from \cite{towards_interpretable}.
+        Depth was discretized into 64 bins as can be observed from the horizontal axis.
+        Selectivity of each channel-layer pair is also reported.
+        Some channels exhibit depth selectivity (top row), while in others it completely misses (bottom row).
+        \label{fig:selectivity}
+    }
+\end{figure}
+
+With the purpose of making depth estimation models more interpretable, You et al. propose a regularization term to be used during training.
+The authors discard a simpler approach (that is: to directly increase general depth selectivity during training) in favor of a more stable formula.
+After assigning to each channel $c$ of a certain layer $l$ of the feature map a bin $b_{c}$, they define the following:
+\[
+    \bar{R}_{l, c}^{-b_{c}} = \text{mean}_{b \neq b_{c}} R_{l, c}^{b}
+\]
+The assignment of bins to channels consists of a simple heuristic: given $C_{l}$ channels and $B$ bins, arbitrarily assign $C_{l} / B$ to each bin.
+$B$ is chosen so to divide $C_{l}$.
+Finally, the regularization term is given by:
+\[
+    \mathcal{L}_{reg} =
+    \sum_{l \in L} \,
+    \sum_{c \in [C_{l}]} \,
+        \frac
+            {|R_{l, c}^{b_{c}}| - |\bar{R}_{l, c}^{-b_{c}}|}
+            {|R_{l, c}^{b_{c}}| + |\bar{R}_{l, c}^{-b_{c}}|}
+\]
+Where $L$ is the set of layers to which apply the regularization.
+After training the network using this additional term, You et al. observe an increase in the depth selectivity of the model both globally, with a mean depth selectivity of 0.83, and also locally.
+Comparing the figure \ref{fig:increased_selectivity}  with \ref{fig:selectivity}, it can be seen how the histogram of responses peaks more, implying a higher depth selectivity for that channel-layer pair.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figs/increased_selectivity}
+    \caption{
+        The content is analogous to that of the figure \ref{fig:selectivity}, but it refers to a model regularized with the introduced term.
+        The depth selectivity of the considered channel-layer pairs is evident.
+        \label{fig:increased_selectivity}
+    }
+\end{figure}
+
 \section{Thoughts on Interpretability}
+In the fields of philosophy, psychology and cognitive science there are a lot of mature works addressing the problem of what an explanation is and how people evaluate its quality, but most of XAI research is based on an intuitive idea of what constitutes a “good” explanation because seeking explanations as defined by such social sciences would lead to failure \cite{Miller}.
+There is an explanatory gap (EG) between natural language and mathematical language expressiveness which undermines the possibility to rigorously define what an explanation is in mathematical terms, necessary for applying it to artificial intelligence systems.
+This same gap is also the reason for which training objectives expressed as mathematical functions do not account for the complexity of real-life goals involved in tasks such as driving \cite{Zablocki2022}.
+Hence, research in the field of XAI is driven by mathematical heuristics that result in intuitively “good” explanations.
+However, humans are known to be highly biased when taking their decisions intuitively rather than through critical analysis \cite{Kahneman}. 
+
+To show how humans are not good at intuitively judging what a good explanation is, consider for instance the family of XAI post-hoc methods in computer vision that produce a saliency map (a.k.a. heat map) as explanation (e.g. GradCAM \cite{GradCAM}).
+They are so-called local methods, meaning: given an input image $\mathbf{I}$ and a model $f$, they return an explanation of its specific prediction $y = f(\mathbf{I})$.
+This explanation is a map assigning an “importance” value to image pixels.
+It is easily visualizable (usually overlaid on the input image $\mathbf{I}$, see figure \ref{fig:grad_cam}) by a human who, by visual inspection, can immediately grasp which parts of the image are supposedly more relevant for that prediction by $f$.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figs/grad_cam}
+    \caption{
+        Image from \cite{GradCAM}.
+        (a) Original image.
+        (b) Saliency map obtained with another method.
+        (c) Saliency map (with respect to the class "cat") obtained with GradCAM and overlaid onto the original image.
+        \label{fig:grad_cam}
+    }
+\end{figure}
+
+For example if the model solves a classification problem then the highlighted pixels represent “where it looked at” for taking the classification decision.
+However, the explanatory gap of above is filled by human cognition.
+Indeed, humans perceive images at first sight in a very rich way and decompose it directly into objects, materials, lights, shadows, reflections, geometry \cite{pinker2009mind}.
+This implies that when looking at an image with highlighted areas (as it is when visualizing a saliency map) it is difficult to separate the rich conscious experience of the image from the actual information provided by the explanation.
+The explanation has a very specific mathematical meaning, but it will look “good” as long as the highlighted area roughly contains reasonable parts of the image involved in humanly justifying the ground truth answer.
+For instance, the model classifies an image as a cat and cat pixels are highlighted.
+Although this kind of explanation is informative of the model behavior and can be 
+effectively used for debugging purposes \cite{molnar2022}, it doesn't increase its interpretability.
+It doesn't inform about how the model took its decision but rather which was it. 
+
+All XAI methods suffer from similar problems: they provide seemingly “good” explanations, which appear so because of cognitive biases, but don't actually increase interpretability of the model on which they are applied because of the specific mathematical meaning of their explanations.
+This is a consequence of the EG which limits human understanding of complex mathematical artificial intelligence models.
+This can be alleviated by making assumptions about the targeted task.
+The more assumptions are made when developing a model, the smaller the gap is.
+In fact assumptions simplify reality, making it more easily representable in mathematical terms and leading to a better understanding of the resulting AI model.
+Human tasks, namely tasks that humans can solve and a machine is asked to do as well, are the most susceptible to the explanatory gap.
+Examples of them are: object detection, image segmentation, question answering, speech-to-text, driving.
+Depth estimation is, generally speaking, a human task, but, if one thinks more carefully, it probably isn't.
+It'll be discussed later.
+For solving this kind of tasks, humans use their cognitive abilities and the tasks themselves are defined by those abilities.
+Because it's difficult to abstract from their own cognition, when dealing with such tasks humans are more easily biased.
+Also, simplifying the problem by making assumptions is hardly ever possible.
+
+\vfill
+
+The methods discussed in the previous section need a review after this discussion.
+Let's start from the work of You et al. \cite{towards_interpretable}.
+The authors assume that depth selectivity of feature channels is a measure of interpretability without explaining why.
+They rather give general analogies with other works where a similar dissection of the network behavior was done, but for different tasks.
+The proposed interpretability measure is, in my opinion, arguably a bad measure.
+Consider a depth estimation model based on a bin method, in such methods there usually are "bin discriminating layers" (BDLs) that are specialized in classifying the input pixels with a bin label through the activation of a feature map.
+Depth selectivity measures how much some layers of the model work like a BDL, so for instance a bin method in correspondence of BDLs would appear to be highly interpretable.
+But BDLs are the second-to-last step in depth estimation based on bin methods, where the last is just an aggregation of the bin scores into a depth value.
+Hence, for You et al., an interpretable network that performs depth estimation is just a network that solves the task in early layers, i.e. a smaller network.
+
+In "Visualization of Convolutional Neural Networks for Monocular Depth Estimation" \cite{Hu}, Hu et al. define their explainability method (in this case a saliency method) based on its output.
+They repeatedly notice that if the mask $\textbf{M}$ is not properly optimized the result will be "unexpected" or not "useful".
+The mask is defined in such a way that the explanation is meaningful to humans.
+So, while other formulations are mathematically equivalent for what concerns the main optimization objective, the regularization is chosen based on the resulting appearance.
+Hence, the authors fall in a circularity.
+Notice that their objective is not to output a good-looking image, but to investigate the behavior of the model.
+While their visualization method can be useful, it is based on an arbitrary concept of "relevance" for pixels contributing to the prediction.
+
+The first work discussed from Dijk et al. \cite{Dijk} is, in my opinion, a good investigation on what certain neural networks do.
+It is not \textit{explaining} their behavior, but it is informative nonetheless and sheds light on various potential biases of models trained on the KITTI dataset.
+For what concerns the current discussion I don't feel like criticizing it.
+
+\vfill
+
+\paragraph{Depth estimation and Human Tasks.}
+Humans can perceive depth.
+Formally (assuming a "formally" is even meaningful), in what sense humans perceive depth?
+The following discussion is about personal observations based on introspection.
+
+Humans don't perceive the environment neither in terms of pixels, nor through static entities like images are.
+It is difficult to align human depth perception to the formulation of machine depth estimation.
+Another aspect to consider is that in certain contexts humans can estimate distances, while in others they cannot.
+Also: in certain contexts humans can estimate \textit{relative} distance of objects, while in others they cannot.
+
+This implies that humans cannot annotate whole images with their metric depth map and neither with their relative depth maps.
+The only kind of annotation humans can perform is that of DIW dataset \cite{DIW}, where humans were asked to tell which pixel was closer to the camera given another.
+
+One could argue that given a digital image to a human, some software support and enough time, an \textit{accurate} dense depth map could be annotated.
+For sure, humans are not able to grasp all the content of an image (particularly \textit{depth} content) by looking at it only once.
+More looks are necessary and eyes must explore it also applying some sort of visual reasoning, e.g. visually linking objects to their orthogonal projection on some visible straight line for accurately estimating their depth.
+Finally, as previously discussed in this chapter, there have been observed visual cues associated with depth perception in humans.
+The role of these cues is still to be clarified since neuroscientific studies did not identify yet a global depth perception process that explicitly uses them.
+But when it comes to visually reasoning about an image depth, these cues come handy to computational thinking. 
+Nevertheless, assuming humans have the right utility instruments and are properly trained, it still has to be empirically proven that they are able to perform a meaningful depth estimation as machines do pixel-wise.
+
+Hence, it can be safely stated that humans can perceive depth but, right now, they cannot perform depth estimation as formulated in computer vision.
+Depth estimation is not a human task.
+
+\vfill
+
+\paragraph{The Necessity of Deep Learning in Depth Estimation.}
+Let's rewind a little and go back to the concept of explanatory gap (EG).
+A significant aspect of the EG is the fact that it is about the general difference in expressiveness of natural language and mathematical language, thus it is not only about explanations.
+In order to clarify this point, consider that when designing an algorithm for solving a certain problem (formulated in natural language) a developer represents the problem relevant objects and relations between them into mathematical language.
+Since the natural language is more expressive than mathematical one, it could happen that some concepts cannot be faithfully translated into mathematical representations (as already noted for training objectives of complex learning algorithms and their explanations).
+The intrinsic transparency of an algorithm comes from human interpretability of its passages which are supposed to represent meaningful operations.
+Thus, a task involving high-level difficult-to-mathematically-represent requests will always have a certain degree of non interpretability.
+This has a fundamental consequence on the whole field of XAI: interpretability methods cannot return arbitrarily good explanations for algorithms solving such tasks.
+Equivalently, there is an upper limit to interpretability (hence also to transparency, since necessary to interpretability) for these algorithms.
+
+Depth estimation (DE) suffers from this same problem.
+To make things worse, there is the fact that depth estimation is not a human task.
+This undermines the possibility of actually developing a fully interpretable algorithmic depth estimation procedure.
+Combined with the upper limit of interpretability of DE, this implies that a non-interpretable technique \textit{must} be used for solving the task.
+So, deep learning, which by now it proved more effective than all other learning techniques, \text{must} be inserted in the depth estimation pipeline.
+Deep learning is necessary.
+
+Notice though that while deep learning is necessary it is not said that the entire procedure must be an end-to-end DL model.
+There is room for some complementary procedure, possibly interpretable, that support the learned models.
+This is where my personal experimental contribution comes in place.
 
 \section{My approach to Interpretability}
