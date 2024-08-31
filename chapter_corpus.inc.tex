@@ -439,7 +439,7 @@ Depth estimation is not a human task.
 \paragraph{The Necessity of Deep Learning in Depth Estimation.}
 Let's rewind a little and go back to the concept of explanatory gap (EG).
 A significant aspect of the EG is the fact that it is about the general difference in expressiveness of natural language and mathematical language, thus it is not only about explanations.
-In order to clarify this point, consider that when designing an algorithm for solving a certain problem (formulated in natural language) a developer represents the problem relevant objects and relations between them into mathematical language.
+In order to clarify this point, consider that, when designing an algorithm for solving a certain \textit{problem formulated in natural language}, a developer represents the entities relevant to the problem and relations between them into mathematical language.
 Since the natural language is more expressive than mathematical one, it could happen that some concepts cannot be faithfully translated into mathematical representations (as already noted for training objectives of complex learning algorithms and their explanations).
 The intrinsic transparency of an algorithm comes from human interpretability of its passages which are supposed to represent meaningful operations.
 Thus, a task involving high-level difficult-to-mathematically-represent requests will always have a certain degree of non interpretability.
@@ -447,14 +447,74 @@ This has a fundamental consequence on the whole field of XAI: interpretability m
 Equivalently, there is an upper limit to interpretability (hence also to transparency, since necessary to interpretability) for these algorithms.
 
 Depth estimation (DE) suffers from this same problem.
-To make things worse, there is the fact that depth estimation is not a human task.
-This undermines the possibility of actually developing a fully interpretable algorithmic depth estimation procedure.
-Combined with the upper limit of interpretability of DE, this implies that a non-interpretable technique \textit{must} be used for solving the task.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DE, as claimed above, is not a human task and is formulated in mathematical language.
+But, even though humans are not able to solve DE, they \textit{implicitly} add constraints to the desired solution.
+These constraints are not explicitly stated and involve the semantic of the scene.
+In certain DE settings, like \textit{binocular} depth estimation (BDE), the problem can still be solved using geometrical reasoning (epipolar geometry \cite{multiview} for BDE\footnote{
+    There are various situations in which BDE is not solvable using only geometric relations \cite{correspondence}.
+    Usually due to reflections, high frequency textures, material transparency and occlusion.
+    Refer to \cite{stereo} for a survey on deep learning based techniques.
+    Notice, however, that deep learning does not substitute the previous techniques for BDE, it rather enhances them.
+    In MDE a complete substitution happened.
+}).
+But, in the case of \textit{monocular} depth estimation (MDE), the problem is ill-posed.
+The solution of an MDE instance must implicitly align with human semantic of the scene that cannot be encoded through mathematical language.
+Hence, MDE is subject to the EG consequences on interpretability.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This undermines the possibility of actually developing a fully interpretable algorithmic MDE (since there is an upper limit to the interpretability of its algorithms).
+This implies that a non-interpretable technique \textit{must} be used for solving the task.
 So, deep learning, which by now it proved more effective than all other learning techniques, \text{must} be inserted in the depth estimation pipeline.
 Deep learning is necessary.
 
-Notice though that while deep learning is necessary it is not said that the entire procedure must be an end-to-end DL model.
-There is room for some complementary procedure, possibly interpretable, that support the learned models.
+Notice though that, while deep learning is necessary, it is not said that the entire procedure must be an end-to-end DL model.
+There is room for complementary procedures, possibly interpretable, that support the learned models.
 This is where my personal experimental contribution comes in place.
 
 \section{My approach to Interpretability}
+MDE is not a human task and hence humans cannot solve it.
+Nevertheless, they perceive scene depth and reason about it.
+Since an interpretable algorithm is, by definition, an algorithm which passages are human understandable, an interpretable MDE algorithm must be inspired to how humans reason about scene depth.
+As stated before, MDE cannot be solved using a \textit{fully} interpretable procedure (which would also contradict the fact that MDE is not a human task), hence black-box models must be used in the overall pipeline.
+By introspection, I observed the following inner facts about scene depth perception (and reasoning) from single image:
+\begin{enumerate}
+    \item{
+        Depth information of what I am looking at is immediately provided;
+    }
+    \item{
+        When I am looking at something, I am not looking at other things, even if close to it;
+    }
+    \item{
+        The eyes continuously move across the image;
+    }
+    \item{
+        The eyes visit more often ambiguous regions;
+    }
+    \item{
+        Sometimes, the eyes move following precise patterns;
+    }
+    \item{
+        Depth perception of things can change throughout the image analysis;
+    }
+    \item{
+        Explicit visual reasoning is performed using eyes movement;
+    }
+    \item{
+        The eyes tend to look at corners (in the computer vision sense, refer to \cite{computer_vision});
+    }
+    \item{
+        When the eyes look at an edge, they tend to follow it in subsequent movements;
+    }
+    \item{
+        When the eyes look at a texture-less region, they tend to move randomly in it.
+    }
+\end{enumerate}
+The non-interpretable component, in my opinion, must be inserted in the immediate (partial) perception of depth of things (point 1 of the bullet list).
+By things, I don't mean well-formed objects.
+Instead, I refer to places where the eyes stop.
+Point 2 sounds tautological, but it is fundamental.
+It states that when looking at something, even though other things fall into the visual field, no depth information about them is provided.
+Mathematically, it is difficult to express this fact.
+The way I choose to give it a formalization is: the reliability of pixels in an atomic depth estimation decreases radially.
+In this way, for having a reliable depth map of a full image, multiple "looks" at it are necessary.
+This well aligns with the tile-based approaches to MDE.
