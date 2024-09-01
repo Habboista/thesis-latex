@@ -130,72 +130,147 @@ As it can be noted, depth estimation is an heterogeneous field.
 
 The main datasets used for benchmarking monocular depth estimation techniques are \texttt{KITTI} \cite{KITTI}, \texttt{NYUv2} \cite{NYUv2} and \texttt{Cityscapes} \cite{Cityscapes}.
 
-\section{Metrics}
+\section{Metrics and Evaluation}
 
-For quantifying the performance of depth estimation algorithms various metrics are used in the literature.
-Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and its corresponding groudtruth depth map $\mathbf{Z}_{gt}$, these metrics are defined as follows:
+For quantifying the performance of depth estimation algorithms, various metrics are used in the literature.
+Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and its corresponding groudtruth depth map $\mathbf{Z}_{gt}$, these metrics are defined as in table \ref{t:metrics}.
 
+\begingroup
+\renewcommand{\arraystretch}{2.}
 \begin{table}
-\centering
-\begin{tabulary}{\textwidth}{lL}
-\toprule
-    \emph{Name} & \emph{Expression} \\
-\midrule
-    \textit{Mean Absolute Relative Error} & $\text{mean}_{i \in \mathbf{Z}_{pred}} \frac {\big| \mathbf{Z}_{gt, i} - \mathbf{Z}_{pred, i} \big|} {\mathbf{Z}_{gt, i}}$ \\
-    \textit{Mean Squared Relative Error}  & $\text{mean}_{i \in \mathbf{Z}_{pred}} \frac {\left( \mathbf{Z}_{gt, i} - \mathbf{Z}_{pred, i} \right)^{2}} {\mathbf{Z}_{gt, i}}$ \\
-    \textit{Root Mean Squared Error} & $\sqrt{
-        \text{mean}_{i \in \mathbf{Z}_{pred}} \left( \mathbf{Z}_{gt, i} - \mathbf{Z}_{pred, i} \right)^{2}
-    }$ \\
-    \textit{Root Mean Squared Logarithmic Error} & $\sqrt{
-        \text{mean}_{i \in \mathbf{Z}_{pred}} \left( log \, \mathbf{Z}_{gt, i} - log \, \mathbf{Z}_{pred, i} \right)^{2}
-    }$ \\
-    \textit{Accuracy with respect to a threshold} & $\% \text{ of pixels } i \text{ s.t. } max(
-		\frac{\mathbf{Z}_{gt, i}}{\mathbf{Z}_{pred, i}},
-		\frac{\mathbf{Z}_{pred, i}}{\mathbf{Z}_{gt, i}}
-	) < \text{threshold}$ \\
-\bottomrule
-\end{tabulary}
-\caption[Frequently used metrics]{
+	\begin{tabular}{l|l}
+	Mean Absolute Relative Error (MARE) & $\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \frac {\big| \mathbf{Z}^{*}(p) - \mathbf{Z}(p) \big|} {\mathbf{Z}^{*}(p)}$ \\
+	Mean Squared Relative Error (MSRE) & $\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \frac {\left( \mathbf{Z}^{*}(p) - \mathbf{Z}(p) \right)^{2}} {\mathbf{Z}^{*}(p)}$ \\
+	Root Mean Squared Error (RMSE) & $\sqrt{
+		\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \left( \mathbf{Z}^{*}(p) - \mathbf{Z}(p) \right)^{2}
+	}$ \\
+	Root Mean Squared Logarithmic Error (RMSEL) & $\sqrt{
+		\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \left( log \, \mathbf{Z}^{*}(p) - log \, \mathbf{Z}(p) \right)^{2}
+	}$ \\
+	Accuracy with respect to a threshold ($\delta$) & $\frac{1}{\big| \mathbf{Z}^{*} \big|} \, \big| \{p \in \mathbf{Z}^{*} \, | \, \text{max}(
+		\frac{\mathbf{Z}^{*}(p)}{\mathbf{Z}(p)},
+		\frac{\mathbf{Z}(p)}{\mathbf{Z}^{*}(p)}
+	) < \text{threshold} \} \big| $\\
+	\end{tabular}
+\caption{
     Frequently used metrics in depth estimation literature.
-    Common thresholds for the last one are $1.25$, $1.25^{2}$ and $1.25^{3}$
+    Common thresholds for $\delta$ are $1.25$, $1.25^{2}$ and $1.25^{3}$.
     \label{t:metrics}
 }
 \end{table}
+\endgroup
 
-When computing these metrics, not all pixels are considered and some processing is usually performed to mitigate certain problems.
-For instance, LIDAR ground truth depth maps are often sparse, so $\mathbf{Z}_{gt,i }$ is not defined for all pixels $i$. and it is common practice to mask out reflective and transparent surfaces as in \cite{Eigen} for their ground truth labels are likely to be invalid.
+When computing them, not all pixels are considered and some processing is usually performed to mitigate certain problems.
+For instance, LIDAR ground truth depth maps are often sparse, so $\mathbf{Z}^{*}(p)$ is not defined for all pixels $p \in \mathbf{Z}^{*}$.
+Also, it is common practice to mask out reflective and transparent surfaces, as in \cite{Eigen}, for their ground truth labels are likely to be invalid.
 Some authors also clamp the predicted depth maps \cite{Garg} to the ground truth depth range or mask out ground truth pixels corresponding to depth values above a certain threshold \cite{evalStudy}.
 Moreover, models have diverse kind of outputs and output resolutions.
 Some models output disparity maps, other depth maps.
 Evaluating a given model on a certain dataset requires converting the model output format and output resolution to be compatible with the ones from the dataset ground truth data.
 The resizing step involves interpolation, which can bias the model performance when the predictions are particularly small w.r.t. the ground truth data resolution \cite{evalStudy}.
-Furthermore, not every dataset provides camera intrinsics per image which are required for converting disparity maps to depth maps and some models are tuned on specific camera configurations.
-This leads to an another important matter: monocular depth estimation models do not have absolute geometric references to produce depth maps with the correct scale, unlike binocular depth estimation models.
+Furthermore, not every dataset provides camera intrinsic parameters per image which are required for converting disparity maps to depth maps and some models are tuned on specific camera configurations.
+This leads to another important matter: monocular depth estimation models do not have absolute geometric references to produce depth maps with the correct scale, unlike binocular depth estimation models.
 This last issue particularly affects self-supervised models.
-Eigen et al. \cite{Eigen} introduced a \textit{Scale-Invariant Error} upon which they also modeled their training loss, they observed that correcting for the mean log depth of each prediction substituting it with the corresponding ground truth one leads to a 20\% relative improvement in performance.
-Their \textit{Scale-Invariant Error} is invariant to scale in the sense that by pixelsiwe multiplying a prediction or a ground truth depth map for a positive value the corresponding error remains unchanged.
+Eigen et al. \cite{Eigen} introduced a \textit{Scale-Invariant Error} upon which they also modeled their training loss.
+They observed that correcting for the mean log depth of each prediction, substituting it with the corresponding ground truth one, leads to a 20\% relative improvement in performance.
+Their \textit{Scale-Invariant Error} is invariant to scale in the sense that, by pixel-wise multiplying a prediction or a ground truth depth map for a positive value, the corresponding error remains unchanged.
 \[
 	\textit{Scale-Invariant Error} =
-		\text{mean}_{i,j \in \mathbf{Z}_{pred}}
+		\text{mean}_{p, q \in \mathbf{Z}^{*}}
 		(
-			( log \, \mathbf{Z}_{pred,  i} - log \, \mathbf{Z}_{pred,  j}) -
-			( log \, \mathbf{Z}_{gt,  i } - log \, \mathbf{Z}_{gt,  j})
+			( log \, \mathbf{Z}(p) - log \, \mathbf{Z}(q)) -
+			( log \, \mathbf{Z}^{*}(p) - log \, \mathbf{Z}^{*}(q))
 		)^{2}
 \]
-In \cite{SfMLearner} Zhou et al. scale each prediction $\mathbf{Z}_{pred}$ of their model by $\frac{\text{median}(\mathbf{Z}_{gt})}{\text{median}(\mathbf{Z}_{pred})}$ so to obtain an evaluation independent of scale also for the other metrics.
-Also Godard et al. follow this approach in \cite{MonoDepth2}, but they make the scaling factor equal across all images by taking the mean of all the median scales both for predictions and ground truth observations:
+In \cite{SfMLearner} Zhou et al. scale each prediction $\mathbf{Z}$ of their model by $\frac{\text{median}(\mathbf{Z}^{*})}{\text{median}(\mathbf{Z})}$, so to obtain an evaluation independent of scale also for the other metrics.
+Godard et al. also follow this approach in \cite{MonoDepth2}, but they make the scaling factor equal across all images by taking the mean of all the median scales both for predictions and ground truth observations:
 \[
 	\frac{
-		\text{mean}_{\mathbf{Z}_{gt}} (\text{median} ( \mathbf{Z}_{gt}))
+		\text{mean}_{\mathbf{Z}^{*}} (\text{median} ( \mathbf{Z}^{*}))
 	}{
-		\text{mean}_{\mathbf{Z}_{pred}} (\text{median} ( \mathbf{Z}_{pred}))
+		\text{mean}_{\mathbf{Z}} (\text{median} ( \mathbf{Z}))
 	}
 \]
-They argue that adapting the depth distribution with a scaling factor defined per image hides large scale variations in the predicted depth maps, which is undesirable if one wants to apply the model to a sequence of images, in which there must be scale temporal consistency.
+They argue that: adapting the depth distribution with a scaling factor defined per image, hides large scale variations in the predicted depth maps, which is undesirable if one wants to apply the model to a sequence of images, in which there must be temporal consistency of the scales.
 As discussed in \cite{evalStudy}, these processing steps affect in different ways the resulting metrics.
 The same authors also observe that higher quantitative performance doesn't necessarily imply better qualitative appearance.
-In \cite{monocular2024} it is noted that a specifically designed metric that satisfies the need of the depth estimastion task has not been established yet and reasearchers in this field are still searching for new alternatives.
+In \cite{monocular2024} it is noted that a specifically designed metric that satisfies the need of the depth estimation task has not been established yet.
+Researchers in this field are still searching for new alternatives.
 
+\vfill
 
-%\section{Classic}
+Benchmarks of many of the treated works are shown in table \ref{t:kitti_benchmarks} and \ref{t:NYUv2_benchmarks}.
+Since the results come from disparate methods that worked in various depth estimation settings, there is not a monotonical temporal increase in performances.
+Supervised \textit{metric} depth estimation works exhibit better performance indicator.
+These are: \cite{Eigen}, \cite{Eigen2}, \cite{depth_as_classification}, \cite{ordinal_regression}, \cite{denseViT}, \cite{AdaBins}, \cite{Laina}, \cite{LocalBins}, \cite{ZoeDepth}.
 
+The worst performing models are the ones that come from \cite{DIW} and \cite{ReDWeb}.
+In fact, they are \textit{relative} depth estimation models and these metrics are used to measure metric depth values.
+The authors showed that, despite metric information was completely absent in the training phase, models managed to be at least comparable with metric models in terms of performance.
+In relative depth estimation different metrics are employed for evaluation purposes.
+A common one, found both in \cite{DIW} and \cite{ReDWeb}, is the Weighted Kinetic Disagreement Rate (WKDR).
+I won't define it here, refer to \cite{Zoran} in which Zoran et al. firstly introduced it.
+
+Self-supervised models place in the middle, but, depending on whether the supervision was on stereo data (that implicitly contain metric information) or monocular footage, there are observable differences.
+\cite{Garg}, \cite{MonoDepth}, \cite{MonoDepth2}, \cite{struct2depth}, \cite{vid2depth}, \cite{FeatDepth}, \cite{SfMLearner} train models in a self-supervised manner.
+
+\vfill
+
+The metrics defined in this section are the ones used by Eigen et al. in \cite{Eigen} for metric depth estimation on KITTI and NYUv2.
+Their work was the first deep learning based approach to depth estimation and has been taken as a reference for a long time.
+As this field evolved, there has been some change in how researchers evaluated their work.
+This can be seen also dataset-wise!
+Benchmarks on NYUv2 stopped reporting MSRE and RMSEL, using instead a log relative error.
+
+The work of Ranftl et al. \cite{MiDas} started the zero-shot research line in depth estimation.
+While the used metrics didn't change, the evaluation procedure did.
+Models are trained on a dataset and the evaluation is run on a whole different dataset.
+When doing this, researchers only report a pair of metrics, usually an error metric and an accuracy.
+Fall into this category \cite{MiDas}, \cite{PatchFusion}, \cite{Marigold}, \cite{ZoeDepth}.
+
+Concluding: single image depth estimation is a vast field rapidly evolving and how to measure its improvements evolves with it.
+
+\begin{table}
+	\begin{tabular}{c|c|c|c|c|c|c|c|c}
+		\emph{Method} & \emph{Year} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
+		\hline
+		Eigen et al. \cite{Eigen}                  & 2014 & 0.190 & 1.515 & 7.156 & 0.270 & 0.692 & 0.899 & 0.967 \\
+		Garg et al. \cite{Garg}                    & 2016 & 0.169 & 1.080 & 5.104 & 0.273 & 0.740 & 0.904 & 0.962 \\
+		MonoDepth \cite{MonoDepth}                 & 2017 & 0.097 & 0.896 & 5.093 & 0.176 & 0.879 & 0.962 & 0.986 \\
+		SfMLearner \cite{SfMLearner}               & 2017 & 0.208 & 1.768 & 6.856 & 0.283 & 0.678 & 0.885 & 0.957 \\
+		Cao et al. \cite{depth_as_classification}  & 2017 & 0.153 &   -   & 5.290 &   -   & 0.814 & 0.939 & 0.976 \\
+		Fu et al. \cite{ordinal_regression}        & 2018 & 0.072 & 0.307 & 2.727 & 0.120 & 0.932 & 0.984 & 0.994 \\
+		MonoDepth2 \cite{MonoDepth2}               & 2018 & 0.106 & 0.806 & 4.630 & 0.193 & 0.876 & 0.958 & 0.980 \\
+		struct2depth \cite{struct2depth}           & 2018 & 0.108 & 0.825 & 4.750 & 0.186 & 0.873 & 0.957 & 0.982 \\
+		vid2depth \cite{vid2depth}                 & 2018 & 0.151 & 0.949 & 4.383 & 0.227 & 0.802 & 0.935 & 0.974 \\
+		FeatDepth \cite{FeatDepth}                 & 2020 & 0.099 & 0.697 & 4.427 & 0.184 & 0.889 & 0.963 & 0.982 \\
+		denseViT \cite{denseViT}                   & 2021 & 0.062 &   -   & 2.573 & 0.092 & 0.959 & 0.995 & 0.999 \\
+		AdaBins \cite{AdaBins}                     & 2021 & 0.058 & 0.190 & 2.360 & 0.088 & 0.964 & 0.995 & 0.999 \\
+	\end{tabular}
+	\caption{
+		\textbf{KITTI} benchmarks.
+		\label{t:kitti_benchmarks}
+	}
+\end{table}
+
+\begin{table}
+	\begin{tabular}{c|c|c|c|c|c|c|c|c}
+	\emph{Method} & \emph{Year} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
+	\hline
+	Eigen et al. \cite{Eigen}                      & 2014 & 0.215 & 0.212 & 0.907 & 0.285 & 0.611 & 0.887 & 0.971 \\
+	Eigen et al. \cite{Eigen2}                     & 2015 & 0.158 & 0.121 & 0.641 & 0.214 & 0.769 & 0.950 & 0.988 \\
+	Laina et al. \cite{Laina}                      & 2016 & 0.127 &   -   & 0.573 & 0.195 & 0.811 & 0.953 & 0.988 \\
+	DIW \cite{DIW}                                 & 2016 & 0.360 & 0.460 & 1.130 & 0.390 &   -   &   -   &   -   \\
+	Cao et al.   \cite{depth_as_classification}    & 2017 & 0.192 &   -   & 0.688 &   -   & 0.722 & 0.926 & 0.980 \\
+	ReDWeb \cite{ReDWeb}                           & 2018 & 0.340 & 0.410 & 1.090 & 0.370 & 0.781 & 0.950 & 0.987 \\
+	Fu et al. \cite{ordinal_regression}            & 2018 & 0.115 &   -   & 0.509 &   -   & 0.828 & 0.965 & 0.992 \\
+	denseViT \cite{denseViT}                       & 2021 & 0.110 &   -   & 0.357 &   -   & 0.904 & 0.988 & 0.998 \\
+	AdaBins \cite{AdaBins}                         & 2021 & 0.103 &   -   & 0.364 &   -   & 0.903 & 0.984 & 0.997 \\
+	LocalBins \cite{LocalBins}                     & 2022 & 0.099 &   -   & 0.357 &   -   & 0.907 & 0.987 & 0.998 \\
+	ZoeDepth \cite{ZoeDepth}                       & 2023 & 0.075 &   -   & 0.270 &   -   & 0.955 & 0.995 & 0.999 \\
+	\end{tabular}
+\caption[Frequently used metrics]{
+	\textbf{NYUv2} benchmarks.
+	\label{t:NYUv2_benchmarks}
+}
+\end{table}
