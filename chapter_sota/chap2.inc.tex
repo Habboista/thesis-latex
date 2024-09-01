@@ -117,23 +117,111 @@ Transformers.
 Markov Random Field, Conditional Random Fields, Neural Conditional Random Fields.
 
 \section{Datasets}
-Deep learning models learn the data distribution fed to them, e.g. if a model always receives car images during its training phase, then when an image without a car is presented to it, it will likely have the same output as putting a car in the middle of the image.
-Hence datasets characteristics must be described in order to understand the behaviour of models trained on them.
-The geometry of a scene is majorly affected by wether it is indoors or outdoors.
-There are datasets with only images from outdoor scenes \cite{KITTI} \cite{Cityscapes}, datasets with only images from indoor scenes \cite{NYUv2} and datasets with both.
-Illumination(day or night), resolution(HD, 4K, ...) and weather conditions(foggy, rainy, clear, ...) are other relevant factors.
-We say that a model operates \textit{into the wild} if it has been trained on images of unstructured environments, such datasets exist \cite{DIW} \cite{ReDWeb} \cite{Youtube3D} but they formulate depth estimation as a \textit{relative} depth estimation, i.e. knowing which pixels correspond to closer objects than others.
+Deep learning models learn the data distribution fed to them.
+For example, if a model always receives car images during its training phase, then when an image without a car is presented to it, it will likely behave as if there was a car in the middle of the image.
+Hence, datasets characteristics must be described in order to understand the behavior of models trained on them, in particular their ability to \textit{transfer} their knowledge to unseen contexts.
 
-During training phase different models have different requirements. Some need rectified stereo pairs, some need video sequences and some need single images. Particular works require more exotic datasets, for instance a CAD models dataset \cite{IM2CAD}.
+From a depth estimation perspective, the geometry of a scene is majorly affected by whether it is indoors or outdoors.
+Indoor images present a limited range of depth values, while in outdoor scenes this can get quite large or be not defined, e.g. in pixels corresponding to the sky.
+These two kind of environments semantically differ by involving objects of generally different categories that are rarely found depicted together.
+In an outdoor image buildings, cars, roads and traffic signs are common, while in an indoor one furniture, paintings and dresses can appear.
 
-As it can be noted, depth estimation is an heterogeneous field.
+Illumination (day or night), resolution (HD, 4K, ...) and weather conditions (foggy, rainy, clear, ...) in which images were captured are other relevant factors.
+We say that a model operates \textit{into the wild} if it has been trained on images of unstructured environments.
+Datasets of such scenes are \cite{DIW} \cite{ReDWeb} \cite{Youtube3D}, but they are used for \textit{relative} depth estimation, i.e. knowing which pixels correspond to closer objects than others.
 
-The main datasets used for benchmarking monocular depth estimation techniques are \texttt{KITTI} \cite{KITTI}, \texttt{NYUv2} \cite{NYUv2} and \texttt{Cityscapes} \cite{Cityscapes}.
+The main datasets historically used for benchmarking monocular depth estimation (DE) techniques are KITTI \cite{KITTI} and NYUv2 \cite{NYUv2}.
+Although, due to the increasing computational power and availability of data, in recent years DE methods are being benchmarked on a lot of datasets in order to evaluate their zero-shot performance \cite{MiDas, PatchFusion, Marigold, ZoeDepth}.
+
+The progress of computer graphics made also possible to create photorealistic synthetic dataset \textit{densely} annotated.
+Depth information is expensive to acquire and there are technical challenges that make it impossible to measure depth values corresponding to every pixel of an image.
+For instance, LIDAR sensors are not able to measure depth values in correspondence of reflective objects.
+Kinect sensors are instead limited in the detectable depth range.
+Synthetic datasets can overcome these difficulties, but rendered scenes are less complex than real world ones.
+Transferability is an issue of models trained purely on synthetic data.
+Marigold \cite{Marigold} empirically proved that it is possible to obtain SOTA performances in DE by just fine-tuning a pre-trained vision foundation model (adapted to DE) on synthetic datasets.
+They used Virtual KITTI 2 \cite{VirtualKITTI2} and Hypersim \cite{Hypersim}, respectively created in 2020 and 2021.
+
+Virtual KITTI 2 \cite{VirtualKITTI2} is a synthetic version of the KITTI dataset\footnote{The "2" represents the version of the virtual dataset, Virtual KITTI "1" was created in 2016.} produced with the Unity game engine.
+Originally, it was a virtual reproduction of the driving scenes from KITTI, but later more features wwere added.
+It now contains annotated driving sequences captured in various weather and lighting conditions.
+
+Hypersim \cite{Hypersim} is an indoor photorealistic synthetic dataset from Apple.
+To create the dataset, they use publicly available 3D scenes produced by professional artists.
+The dataset targets the general scene understanding task, making available various kinds of annotations (depth, illumination, semantic segmentation, 3D object detection and others).
+The authors developed a cloud pipeline that sample camera view points from each scene and render various images under different lighting settings.
+The procedure is illustrated in \cite{Hypersim} and allows also for dynamic interactive labeling of the meshes.
+
+There are many other datasets that providing depth information \cite{Cityscapes, saxena5, ETH, DIODE, SYNTHIA, DispNet}.
+See also \cite{MiDas} for an additional list, but they won't be treated here.
+The following subsections are dedicated to the KITTI and NYUv2 datasets.
+
+\subsection{KITTI}
+Developing autonomous systems that are able to assist humans in everyday tasks is one of the grand challenges in modern computer science \cite{KITTI}.
+The KITTI dataset \cite{KITTI} provides annotated data usable for such purpose.
+It consists of annotated images captured by a car mounting various sensors.
+A stereo-rig with two pairs of cameras capture both colored and gray images (the latter with higher resolution).
+A Velodyne (LIDAR) sensor measures depth values producing a point cloud that is projected onto the captured images, obtaining sparse ground truth depth maps.
+Finally, also a GPS/IMU localization unit is used for tracking the car route.
+The overall setup is illustrated in figure \ref{fig:kitti_car}.
+
+\begin{figure}
+	\centering
+    \includegraphics[width=0.8\textwidth]{figs/kitti_car}
+    \caption{
+        Car setup used for acquiring KITTI data \cite{KITTI}, the image is from their website.
+        \label{fig:kitti_car}
+    }
+\end{figure}
+
+Along various driving sessions, the car records data from all the sensors which are then cleaned and temporally aligned.
+The dataset is hence organized as annotated video footage from the various sessions counting more than 40.000 images.
+The driving sessions are all outdoor and with daylight illumination conditions.
+Before each driving session a calibration phase is conducted.
+All calibration information are available in the dataset, this includes also stereo baseline and camera parameters.
+For this reason, the dataset is particularly suitable to self-supervised training that exploit geometrical constraints of cameras.
+All the self-supervised works that will be reviewed in this thesis use this same dataset.
+In figure \ref{fig:kitti_example} there can be found images from KITTI.
+Other than depth maps, various kind of annotations are provided.
+Parts of the dataset have been subsequently annotated for tasks such as object detection, image segmentation, optical flow estimation and others.
+In here, depth data is the focus, but there are works tackling depth estimation by learning multiple tasks at once (e.g. image segmentation and depth estimation).
+These are not treated here, some of them are discussed in \cite{MERTAN2022103441}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO: use sparsely annotated depth maps, not completed ones.
+\begin{figure}
+	\centering
+    \includegraphics[width=0.8\textwidth]{figs/kitti_example}
+    \caption{
+        Images from KITTI, their ground-truth depth map
+        \label{fig:kitti_example}
+    }
+\end{figure}
+
+\begin{figure}
+	\centering
+    \includegraphics[width=0.8\textwidth]{figs/nyuv2_example}
+    \caption{
+        Image and its annotations from NYUv2 paper \cite{NYUv2}.
+        \label{fig:nyuv2_example}
+    }
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{NYUv2}
+Many robotics and scene understanding applications require a physical parse of the scene into objects, surfaces, and their relation \cite{NYUv2}.
+The NYUv2 dataset \cite{NYUv2} is a collection of 1449 annotated RGBD images from indoor environments of US commercial and residential buildings.
+Depth is measured thanks to a Kinect sensor jointly capturing images with the RGB camera.
+As it can be seen in figure \ref{fig:nyuv2_example}, provided geometry information about the scene is not just depth.
+From the RGBD images are produced surface normal maps, segmentation, 3D planes and support relations through various estimation procedures.
+For instance, for producing the surface normal map, to each pixel they fitted a plane, by least square minimization, to sampled surrounding pixels chosen based on a depth threshold.
+NYUv2 dataset is frequently used for jointly learning multiple tasks for it provides various pixel-wise annotations.
+As for the case of KITTI, here only the depth information will be relevant.
 
 \section{Metrics and Evaluation}
 
 For quantifying the performance of depth estimation algorithms, various metrics are used in the literature.
-Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and its corresponding groudtruth depth map $\mathbf{Z}_{gt}$, these metrics are defined as in table \ref{t:metrics}.
+Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and its corresponding groud-truth depth map $\mathbf{Z}_{gt}$, these metrics are defined as in table \ref{t:metrics}.
 
 \begingroup
 \renewcommand{\arraystretch}{2.}
