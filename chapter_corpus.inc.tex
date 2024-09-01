@@ -471,11 +471,95 @@ Notice though that, while deep learning is necessary, it is not said that the en
 There is room for complementary procedures, possibly interpretable, that support the learned models.
 This is where my personal experimental contribution comes in place.
 
-\section{My approach to Interpretability}
+\section{My approach to Interpretable DE}
 MDE is not a human task and hence humans cannot solve it.
 Nevertheless, they perceive scene depth and reason about it.
 Since an interpretable algorithm is, by definition, an algorithm which passages are human understandable, an interpretable MDE algorithm must be inspired to how humans reason about scene depth.
 As stated before, MDE cannot be solved using a \textit{fully} interpretable procedure (which would also contradict the fact that MDE is not a human task), hence black-box models must be used in the overall pipeline.
+A hybrid single image DE pipeline must be developed.
+
+\subsection{Proposed DE Pipeline}
+The developed pipeline can be applied to any input image, but the subsequent experiments were done on the KITTI dataset \cite{KITTI}.
+Given a tensor image $\mathbf{I}$ of shape $H \times W \times 3$ as input, a criterion is used for sampling patches $\mathbf{P}$.
+All patches must have the same shape $h \times w \times 3$.
+Depth is estimated from each patch through a black-box algorithm and the results are stitched together in the final output depth map.
+For this purpose, patches cannot be too small since depth can be successfully estimated only if global information is provided.
+On the contrary, patches too large make the stitching phase not necessary and the whole pipeline would reduce to a non-interpretable black-box prediction.
+By visually inspecting various crops from KITTI images, I found patches of width and height of 150 to be sufficient for perceiving depth.
+Empirical experiments must be further conducted for assessing this fact with more rigor, it is thus left to future works.
+% TODO: consider BoostingDepth
+This procedure aligns with tile-based methods such as PatchFusion \cite{PatchFusion}, but the main difference is that deep learning is confined to the depth estimation of the patch, while in other works it is also used for stitching.
+
+\vfill
+
+\paragraph{Sampling and Training.}
+The patch sampling is used in two different ways: for deciding on which patches the model is trained on and which patches are used for inferring the full image depth map. 
+During training the sampling procedure must ensure enough data diversity which act as a regularization, while during inference it should target patches expected to produce confident predictions.
+A lot of design choices can be made to this extent.
+I experimented with two sampling procedures:
+\begin{itemize}
+    \item{\textit{Random strategy}: during training, patches are randomly cropped, while during inference a grid of overlapping patches is deterministically produced.}
+    \item{\textit{Corner strategy}: image corners are detected using a corner response function. During training patches are randomly sampled around corners and during inference only the corners with higher response are considered.}
+\end{itemize}
+Two neural models solving the same task and with identical architectures can have differences in interpretability if they have been trained on different datasets.
+The sampling procedure is a filter to which data the black-box model is trained on.
+The corner strategy defines a smaller data manifold to train on than the random strategy does.
+By making the data manifold smaller, the learning problem is simplified since it is forced to learn fewer relations.
+This holds as long as the smaller manifold is a subset of the bigger manifold being compared to.
+The corner strategy effectively defines a subset of the patches the random strategy samples.
+It is easier to build trust in a model that tackles a simplified version of the original problem.
+Hence, the corner strategy increases the interpretability of the black-box component. 
+
+\paragraph{Patch pre-processing and Training Loss.}
+Sampled patches are further processed before being fed to the network so to simplify the learning problem.
+I experimented with two transformations: warping the patch to preserve camera geometry and radially blurring it.
+
+The warping procedure ensures that each sampled patch is captured by a virtual camera with its principal point in the center of the patch.
+Camera parameters are needed in order to do this.
+The procedure is the following:
+\begin{enumerate}
+    \item{Sample a point $p$ from image $\mathbf{I}$.}
+    \item{Compute the camera transformation that maps $p$ to the principal point.}
+    \item{Warp the image using the computed transformation and obtain a new image $\tilde{\mathbf{I}}$.}
+    \item{Crop $\tilde{\mathbf{I}}$ around the principal point.}
+\end{enumerate}
+This procedure can produce patches with out-of-view pixels, to mitigate this, in the sampling procedure strips along the borders are ignored.
+Moreover, the warping can produce lower quality images since a bilinear interpolation step is required.
+Instead, for producing the depth map of the patch, the point cloud provided with the image is projected onto the image, coherently with the computed transformation.
+I experimented also with simple image crop, with no warping.
+This warping procedure simulates that patches were captured with identical cameras.
+
+After having cropped (and optionally warped) the patch, I experiment with radially blurring it.%\footnote{It is not a proper radial blur, but it produces a similar visual effect.}.
+%The blur effect is given by iteratively applying gaussian blurring to the patch $\mathbf{P} = \mathbf{P}_{0}$, obtaining $\mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$.
+%Each blurred patch is center-cropped.
+%To the most blurred one $\mathbf{P}_{N}$ no cropping is applied, to $\mathbf{P}_{N-1}$ a center crop slightly smaller than the previous crop is applied.
+%And so forth.
+%Are obtained images of various decreasing sizes:
+%\begin{equation}
+%    \begin{align}
+%    w & = w_{N} \, > \, w_{N-1} \, > \, \dotsc \, w_{1} \, > w_{0} \, > w_{min} \\
+%    h & = h_{N} \, > \, h_{N-1} \, > \, \dotsc \, h_{1} \, > h_{0} \, > h_{min}
+%    \end{align}
+%\end{equation}
+%Where $w_{min}$ and $h_{min}$ represents the minimum shape of the non-blurred area.
+%The radially blurred patch is obtained by concentrically overlapping this patches on top of each other, starting from the most blurred one.
+Radially blurring an image causes some information to be lost.
+A model trained on such blurred images, but asked to perform equally well on the whole image, is likely to see a degradation in its performance.
+Only in particular circumstances it would imply an improvement (if the model overfits to details near image boundaries).
+For this reason I employ both the metrics from table \ref{t:metrics} and a modified version of them that weights the contribution of each pixel based on its distance to the center of the patch.
+The weighting uses a gaussian density function with standard deviation heuristically set to $(w + h) / 2$.
+This ensures that pixel coordinates are also properly scaled in computing the distance from the patch center.
+A similar modification was applied to the loss employed during the training phase.
+A radially weighted scale-invariant-loss is used (the unmodified version is from \cite{Eigen}).
+This loss encourages to better-learn depth values around the center of the patch.
+The blurring smooths out the data manifold by reducing the space of patches considered.
+The informal reason for this is that patches with high-frequency details around the border are mapped to lower-frequency versions, which are less numerous in this finite sampling context.
+This, and the use of a weighted loss, simplifies the learning problem even more.
+
+\paragraph{Fusion algorithm.}
+
+
+\subsection{Ideas}
 By introspection, I observed the following inner facts about scene depth perception (and reasoning) from single image:
 \begin{enumerate}
     \item{
