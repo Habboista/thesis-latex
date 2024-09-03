@@ -479,39 +479,39 @@ As stated before, MDE cannot be solved using a \textit{fully} interpretable proc
 A hybrid single image DE pipeline must be developed.
 
 \subsection{Proposed DE Pipeline}
-The developed pipeline can be applied to any input image, but the subsequent experiments were done on the KITTI dataset \cite{KITTI}.
+The developed pipeline can be applied to any input image, but experiments were done on the KITTI dataset \cite{KITTI}.
 Given a tensor image $\mathbf{I}$ of shape $H \times W \times 3$ as input, a criterion is used for sampling patches $\mathbf{P}$.
 All patches must have the same shape $h \times w \times 3$.
 Depth is estimated from each patch through a black-box algorithm and the results are stitched together in the final output depth map.
 For this purpose, patches cannot be too small since depth can be successfully estimated only if global information is provided.
 On the contrary, patches too large make the stitching phase not necessary and the whole pipeline would reduce to a non-interpretable black-box prediction.
-By visually inspecting various crops from KITTI images, I found patches of width and height of 150 to be sufficient for perceiving depth.
-Empirical experiments must be further conducted for assessing this fact with more rigor, it is thus left to future works.
-% TODO: consider BoostingDepth
-This procedure aligns with tile-based methods such as PatchFusion \cite{PatchFusion}, but the main difference is that deep learning is confined to the depth estimation of the patch, while in other works it is also used for stitching.
+By visually inspecting various crops from KITTI images, I found patches of width and height of 150 to be sufficient for humanly perceiving depth.
+Empirical experiments must be further conducted for assessing this fact from a machin point of view, it is thus left to future works.
 
 \vfill
 
 \paragraph{Sampling and Training.}
-The patch sampling is used in two different ways: for deciding on which patches the model is trained on and which patches are used for inferring the full image depth map. 
+The patch sampling is used in two different ways: for deciding on which patches the model will be trained on and which patches are to be used for inferring the full image depth map. 
 During training the sampling procedure must ensure enough data diversity which act as a regularization, while during inference it should target patches expected to produce confident predictions.
 A lot of design choices can be made to this extent.
 I experimented with two sampling procedures:
 \begin{itemize}
-    \item{\textit{Random strategy}: during training, patches are randomly cropped, while during inference a grid of overlapping patches is deterministically produced.}
-    \item{\textit{Corner strategy}: image corners are detected using a corner response function. During training patches are randomly sampled around corners and during inference only the corners with higher response are considered.}
+    \item{
+        \textit{Random strategy}: during training, patches are randomly cropped, while during inference a grid of overlapping patches is deterministically produced.}
+    \item{
+        \textit{Corner strategy}: image corners are detected using a corner response function.
+        During training patches are randomly sampled around corners and during inference only the corners with higher response are considered.
+    }
 \end{itemize}
-Two neural models solving the same task and with identical architectures can have differences in interpretability if they have been trained on different datasets.
 The sampling procedure is a filter to which data the black-box model is trained on.
 The corner strategy defines a smaller data manifold to train on than the random strategy does.
 By making the data manifold smaller, the learning problem is simplified since it is forced to learn fewer relations.
 This holds as long as the smaller manifold is a subset of the bigger manifold being compared to.
 The corner strategy effectively defines a subset of the patches the random strategy samples.
-It is easier to build trust in a model that tackles a simplified version of the original problem.
-Hence, the corner strategy increases the interpretability of the black-box component. 
+Even though the black-box model still lacks of interpretability, it is easier to build trust in it since it tackles a simplified version of the original problem. 
 
 \paragraph{Patch pre-processing and Training Loss.}
-Sampled patches are further processed before being fed to the network so to simplify the learning problem.
+Sampled patches are further processed before being fed to the network so to further simplify the learning problem.
 I experimented with two transformations: warping the patch to preserve camera geometry and radially blurring it.
 
 The warping procedure ensures that each sampled patch is captured by a virtual camera with its principal point in the center of the patch.
@@ -527,39 +527,105 @@ This procedure can produce patches with out-of-view pixels, to mitigate this, in
 Moreover, the warping can produce lower quality images since a bilinear interpolation step is required.
 Instead, for producing the depth map of the patch, the point cloud provided with the image is projected onto the image, coherently with the computed transformation.
 I experimented also with simple image crop, with no warping.
-This warping procedure simulates that patches were captured with identical cameras.
+This warping procedure simulates patches captured with identical cameras.
 
-After having cropped (and optionally warped) the patch, I experiment with radially blurring it.%\footnote{It is not a proper radial blur, but it produces a similar visual effect.}.
-%The blur effect is given by iteratively applying gaussian blurring to the patch $\mathbf{P} = \mathbf{P}_{0}$, obtaining $\mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$.
-%Each blurred patch is center-cropped.
-%To the most blurred one $\mathbf{P}_{N}$ no cropping is applied, to $\mathbf{P}_{N-1}$ a center crop slightly smaller than the previous crop is applied.
-%And so forth.
-%Are obtained images of various decreasing sizes:
-%\begin{equation}
-%    \begin{align}
-%    w & = w_{N} \, > \, w_{N-1} \, > \, \dotsc \, w_{1} \, > w_{0} \, > w_{min} \\
-%    h & = h_{N} \, > \, h_{N-1} \, > \, \dotsc \, h_{1} \, > h_{0} \, > h_{min}
-%    \end{align}
-%\end{equation}
-%Where $w_{min}$ and $h_{min}$ represents the minimum shape of the non-blurred area.
-%The radially blurred patch is obtained by concentrically overlapping this patches on top of each other, starting from the most blurred one.
-Radially blurring an image causes some information to be lost.
-A model trained on such blurred images, but asked to perform equally well on the whole image, is likely to see a degradation in its performance.
+After having cropped (and optionally warped) the patch, I experiment with radially blurring it\footnote{It is not a proper radial blur, but it produces a similar visual effect.}.
+The blur effect is given by iteratively applying gaussian blurring to the patch $\mathbf{P} = \mathbf{P}_{0}$, obtaining $\mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$.
+Each blurred patch is center-cropped.
+To the most blurred one $\mathbf{P}_{N}$ no cropping is applied, to $\mathbf{P}_{N-1}$ a center crop slightly smaller than the previous crop is applied.
+And so forth.
+Are obtained images of various decreasing sizes:
+\[
+    w = w_{N} \, > \, w_{N-1} \, > \, \dotsc \, w_{1} \, > w_{0} \, > w_{min}
+\]\[
+    h = h_{N} \, > \, h_{N-1} \, > \, \dotsc \, h_{1} \, > h_{0} \, > h_{min}
+\]
+Where $w_{min}$ and $h_{min}$ represents the minimum shape of the non-blurred area.
+The radially blurred patch is obtained by concentrically overlapping this patches on top of each other, starting from the most blurred one.
+Radial blur causes some information to be lost.
+A model trained on such blurred images, but asked to perform equally well on the whole image, is likely to see a degradation in its performance because there is less information available as one gets away from the center.
 Only in particular circumstances it would imply an improvement (if the model overfits to details near image boundaries).
 For this reason I employ both the metrics from table \ref{t:metrics} and a modified version of them that weights the contribution of each pixel based on its distance to the center of the patch.
 The weighting uses a gaussian density function with standard deviation heuristically set to $(w + h) / 2$.
-This ensures that pixel coordinates are also properly scaled in computing the distance from the patch center.
+% This ensures that pixel coordinates are also properly scaled in computing the distance from the patch center.
 A similar modification was applied to the loss employed during the training phase.
 A radially weighted scale-invariant-loss is used (the unmodified version is from \cite{Eigen}).
 This loss encourages to better-learn depth values around the center of the patch.
 The blurring smooths out the data manifold by reducing the space of patches considered.
 The informal reason for this is that patches with high-frequency details around the border are mapped to lower-frequency versions, which are less numerous in this finite sampling context.
-This, and the use of a weighted loss, simplifies the learning problem even more.
 
-\paragraph{Fusion algorithm.}
+\paragraph{Depth fusion pipeline.}
+After having gathered partial depth prediction of the input image, an algorithm for composing a final unique estimation is needed.
+Here follows a theoretical discussion since experiments will follow in future works.
 
+The depth fusion part must be as interpretable as possible since a black-box model has been employed for the DE part.
+In the section \ref{s:miscellaneous}, a tile-based method for DE was discussed: PatchFusion \cite{PatchFusion}.
+While extremely powerful, it is an end-to-end non-interpretable deep learning model that estimates depth patch-wise and subsequently merge them.
+BoostingDepth \cite{BoostingDepth} instead uses a two-stage method with a pre-trained MiDas \cite{MiDas} model for depth estimation and a UNet architecture for merging, but still the overall algorithm is not interpretable.
+The older works from Konrad et al. \cite{konrad2} and Karsch et al. \cite{DepthTransfer}, and a very recent work from Rey-Area et al. \cite{360MonoDepth}, use handcrafted pipelines for the depth fusion part.
+Except for Konrad et al. who take the median of the depth values to be aggregated, the others set up an optimization problem describing desirable properties the resulting full-resolution depth map should satisfy.
+I propose to perform a fine-tuning of the black-box model for merging the estimated patches.
+In this way, the knowledge of the network is exploited for making depth adjustment.
 
-\subsection{Ideas}
+\vfill
+
+Let $\mathbf{I}$ be the input image, $\mathbf{P}_{0}, \mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$ the patches and $\mathbf{D}_{0}, \mathbf{D}_{1}, \mathbf{D}_{2}, \dotsc, \mathbf{D}_{N}$ their estimated depth maps.
+A pixel $p \in \mathbf{P}_{n}$ corresponds to a pixel $\hat{p} \in \mathbf{I}$ and, if some overlap occurs, it corresponds also to a pixel $\hat{p}_{m} \in \mathbf{P}_{m}$.
+All the patches are projected onto the image $\mathbf{I}$ so that pixel coordinates live in the same space.
+Hence, a same pixel $p \in \mathbf{P}_{n}$ belongs to $\mathbf{I}$ and can also belong to other patches $\mathbf{P}_{m}$.
+The black-box DE model is denoted $f$.
+A copy of $f$ is used and denoted $\hat{f}$, this will undergo a fine-tuning stage.
+Let's call $\hat{\mathbf{D}}_{0}, \hat{\mathbf{D}}_{1}, \hat{\mathbf{D}}_{2}, \dotsc, \hat{\mathbf{D}}_{N}$ its predictions on the considered patches.
+
+By fine-tuning $\hat{f}$ is order to make the partial predictions agree on the overlapping regions is a first approach.
+This fine-tuning happens each time inference is run.
+Hence, $f$ is frozen and preserved.
+The following loss could be minimized:
+\[
+    \mathcal{L} =
+        \sum_{n \neq m} \,
+        \sum_{p \in \mathbf{P}_{n} \cap \mathbf{P}_{m}}
+        e^{-\mathbf{W}_{n}(p)}
+        (\hat{\mathbf{D}}_{n}(p) - \mathbf{D}_{m}(p))^{2}
+        \, + \,
+        \lambda
+        \sum_{n}
+        \sum_{p \in \mathbf{P}_{n}}
+        \mathbf{W}_{n}(p)
+        (\hat{\mathbf{D}}_{n}(p) - \mathbf{D}_{n}(p))^{2}
+\]
+Where $\mathbf{W}_{n}$ is a weight mask, as used in the weighted scale-invariant loss and the weighted metrics, that fades radially (if warping was applied to the patch, also the mask is warped).
+$\mathbf{W}_{n}(p)$ is a measure of how much the model \textit{should} be confident about the prediction in $p$.
+Pixels with high confidence contribute less to the loss.
+The first term of the loss encourages different depth maps to agree on the overlapping regions, while the second one avoids the network to completely forget its initial prediction and degenerating into a constant solution. 
+$\lambda$ is a hyperparameter.
+
+The overlapping between patches need to be monitored since it could create an unbalanced loss.
+For this reason the above loss require further modifications.
+Instead of optimizing all patches together, it could be established an ordering.
+Also, the model will perform differently on different patches and so not all patches should be treated equally.
+A procedure similar to the one used for variable selection in statistics could be employed.
+Hence, the optimization would involve an initial small set of patches to which the other ones are iteratively added and optimized, without necessarily using all of them (forward selection).
+Or, some could be iteratively removed from the whole set (backward selection).
+
+Assume there is a strategy for choosing one or more initial patches in which the model is more confident, i.e. some error measure w.r.t. ground truth is \textit{probably} lower.
+For instance, in \cite{BoostingDepth} it is observed that depth estimation models better perform on regions with a precise edge density that depends on the dataset on which the model was trained.
+A simple criteria could be to firstly select the patch with edge density closest to the reference value.
+Let's call $n_{0}$ its index.
+Consider now another patch $\mathbf{P}_{n_{1}}$.
+If it overlaps with $\mathbf{P}_{n_{0}}$ a comparison can be made and might be used for establishing whether to include it in the optimization process or not.
+Ideally, assuming DE is \textit{metric} (otherwise an affine correction is required), patches with a large overlap should agree on depth values, while patches with little overlapping may disagree more.
+This is due to the radial weighting applied during training and to a general translational invariance of convolution layers of the black-box\footnote{Their presence is not obvious, but it is extremely common. If they are not present, data augmentation should provide such an invariance.}.
+For building a coherent depth map, the second patch must present a compromise between fully overlapping and not overlapping, but it should agree as much as possible with the initial patch.
+After the patch is selected it is merged with the previous one, creating a new patch.
+If a criterion that fulfills these requirements is defined, it could be used to iteratively add and optimize patches until a condition is met.
+
+It could happen that some non-optimal choice has been taken during the process.
+In this case, a backtracking procedure should be considered for producing an alternative merge.
+For successfully applying such a thing, fine-tuned models must be copied each time, producing models $\hat{f}_{0}, \hat{f}_{1}, \dotsc$ corresponding to each iteration of the merging procedure.
+This whole fusion pipeline seems computational expensive, but if the neural network used for DE patch-wise is lightweight (and that is the objective of the previous paragraphs) this pipeline is feasible.
+
+\subsection{Motivations for the proposed pipeline}
 By introspection, I observed the following inner facts about scene depth perception (and reasoning) from single image:
 \begin{enumerate}
     \item{
@@ -593,6 +659,7 @@ By introspection, I observed the following inner facts about scene depth percept
         When the eyes look at a texture-less region, they tend to move randomly in it.
     }
 \end{enumerate}
+The fusion pipeline and experiments formulated above are inspired by these observations.
 The non-interpretable component, in my opinion, must be inserted in the immediate (partial) perception of depth of things (point 1 of the bullet list).
 By things, I don't mean well-formed objects.
 Instead, I refer to places where the eyes stop.
@@ -601,4 +668,4 @@ It states that when looking at something, even though other things fall into the
 Mathematically, it is difficult to express this fact.
 The way I choose to give it a formalization is: the reliability of pixels in an atomic depth estimation decreases radially.
 In this way, for having a reliable depth map of a full image, multiple "looks" at it are necessary.
-This well aligns with the tile-based approaches to MDE.
+This aligns with the tile-based approaches to MDE and with the design choices I made.
