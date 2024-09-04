@@ -6,3 +6,90 @@
 \epigraph{\enquote{Somewhere, something incredible is waiting to be known.}}{\emph{Carl Sagan}}
 
 This chapter shows the results obtained in the thesis.
+%In section \ref{sec:experiments} the experimental setting is described and numerical results are reported.
+%In section
+
+\section{Experiments}
+\label{sec:experiments}
+
+\paragraph{Architecture.}
+A neural network model was trained to predict \textit{metric} depth values on image patches.
+The neural architecture used is the one from \cite{Eigen}, with some modification.
+Instead of treating it as a two-stage architecture with a component estimating a coarse depth map and another one refining it, it was treated as an end-to-end method.
+The network is illustrated in figure \ref{fig:eigen}, its backbone is a pretrained AlexNet.
+The input image normalization was also modified.
+The normalization applied shifts image input values from $[0, 1]$ to $[-1, 1]$.
+Finally, an adaptive average pooling layer reduces the deeper feature map of the convolutional part of AlexNet to a feature vector of size 4096.
+
+This model has to be considered a toy model since it is based on the first deep learning architecture ever used for DE (2014).
+As later graphs will show, its learning capabilities are limited.
+
+\paragraph{Training.}
+The dataset used is KITTI \cite{KITTI} with the Eigen split, that is the subdivision of the KITTI dataset into train, validation and test subsets originally used by Eigen et al. in \cite{Eigen} and used as a benchmark from there on.
+Depth maps are built directly from 3D point clouds, a simplification was performed in this phase to make the code signficantly faster.
+This simplification introduces inaccuracies.
+But, since training the model like Eigen et al. showed only little degradation in metric scores (attributable also the changing on the architectural side), the modification was kept.
+
+The model obtained as input image patches of size fixed to $150 \times 150$.
+From each image a batch of 8 patches was extracted.
+Two extraction methods were tried: random sampling patches and sampling patches centered in some detected corner.
+Patches were further processed before prediction.
+It was experimented with geometrical correction of distorsions introduced by the camera far from its principal point.
+So experiments were performed either with warping or without it.
+After this optional transformation, three options were tried: leave the patch as it is, radially blurring it, uniformly blurring it.
+
+In total there are three options: sampling strategy (random vs corner), patch warping (warp vs no warp), blurring (no blur vs radial blur vs uniform blur).
+These result in 12 experiments.
+
+Each experiment consisted in a training of 4 epochs and a stochastic gradient descent optimizer with learning rate 0.0001 and momentum 0.9.
+
+The loss function was common to each experiment and is a radially weighted scale invariant loss.
+It is a modification of the loss from Eigen et al. \cite{Eigen}.
+Their loss is defined in section \ref{s:regression_methods}.
+Each pixel contribution to the loss is weighted with a gaussian density function with $\sigma = (h + w) / 2$ evaluated in the distance of the pixel from the center of the patch.
+
+
+
+
+\section{Sampling strategy}
+\label{sec:sampling strategy}
+
+\section{Warping}
+\label
+\begin{table}
+    \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+        \emph{Sampling} & \emph{Warp} & \emph{Blur} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
+        \hline
+        Random & No  & No      &            0.427  &            7.212  &            13.113  &            0.742  &            0.281  &            0.471  &            0.603  \\
+        Random & No  & Radial  &            0.444  &            7.669  &            13.536  &            0.781  &            0.249  &            0.446  &            0.577  \\
+        Random & No  & Uniform &            0.427  &            7.168  &            13.037  &            0.725  &            0.289  &            0.478  &            0.609  \\
+        Random & Yes & No      &            0.425  &            7.480  &            13.581  &            0.746  &            0.285  &            0.471  &            0.599  \\
+        Random & Yes & Radial  &            0.438  &            7.685  &            13.794  &            0.771  &            0.263  &            0.452  &            0.580  \\
+        Random & Yes & Uniform &            0.424  &            7.205  &            13.363  &            0.706  &            0.274  &            0.474  &            0.613  \\
+        Corner & No  & No      &    \textbf{0.387} & \underline{5.109} & \underline{10.674} &            0.631  & \underline{0.306} &            0.532  &            0.688  \\
+        Corner & No  & Radial  &            0.410  &            5.523  &            11.091  &            0.679  &            0.280  &            0.494  &            0.653  \\
+        Corner & No  & Uniform & \underline{0.389} &    \textbf{4.915} &    \textbf{10.461} &    \textbf{0.601} &    \textbf{0.316} &    \textbf{0.556} &    \textbf{0.718} \\
+        Corner & Yes & No      &    \textbf{0.387} &            5.208  &            10.925  &            0.631  & \underline{0.306} &            0.532  &            0.689  \\
+        Corner & Yes & Radial  &            0.415  &            5.857  &            11.629  &            0.707  &            0.257  &            0.464  &            0.624  \\
+        Corner & Yes & Uniform &    \textbf{0.387} &            5.261  &            11.081  & \underline{0.615} &            0.302  & \underline{0.535} & \underline{0.697} \\
+    \end{tabular}
+\end{table}
+
+\begin{table}
+    \begin{tabular}{c|c|c|c|c|c|c|c|c|c}
+        \emph{Sampling} & \emph{Warp} & \emph{Blur} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
+        \hline
+        Random & No  & No      &             0.323  &            5.024  &            3.364  &            0.389  &            0.423  &            0.699  &            0.849  \\
+        Random & No  & Radial  &             0.332  &            5.361  &            3.420  &            0.412  &            0.398  &            0.676  &            0.830  \\
+        Random & No  & Uniform &             0.344  &            5.498  &            3.351  &            0.415  &            0.391  &            0.664  &            0.824  \\
+        Random & Yes & No      &             0.320  &            5.314  &            3.424  &            0.398  &            0.420  &            0.694  &            0.843  \\
+        Random & Yes & Radial  &             0.331  &            5.541  &            3.463  &            0.410  &            0.402  &            0.674  &            0.828  \\
+        Random & Yes & Uniform &             0.351  &            5.928  &            3.403  &            0.426  &            0.385  &            0.652  &            0.813  \\
+        Corner & No  & No      &             0.299  &            3.921  & \underline{3.045} & \underline{0.352} & \underline{0.461} & \underline{0.743} & \underline{0.889} \\
+        Corner & No  & Radial  &             0.317  & \underline{4.090} &            3.117  &            0.356  &            0.453  &            0.737  &            0.886  \\
+        Corner & No  & Uniform &             0.336  &            4.480  &    \textbf{3.030} &            0.373  &            0.425  &            0.711  &            0.871  \\
+        Corner & Yes & No      &     \textbf{0.301} &    \textbf{4.059} &            3.088  &    \textbf{0.349} &    \textbf{0.465} &    \textbf{0.746} &    \textbf{0.893} \\
+        Corner & Yes & Radial  &  \underline{0.310} &            4.560  &            3.187  &            0.387  &            0.416  &            0.697  &            0.857  \\
+        Corner & Yes & Uniform &             0.337  &            5.026  &            3.105  &            0.404  &            0.392  &            0.670  &            0.841  \\
+    \end{tabular}
+\end{table}
