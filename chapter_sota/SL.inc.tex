@@ -4,23 +4,22 @@ Every pixel $p$ of an image $\mathbf{I}$ has an associated (positive) depth valu
 Monocular depth estimation consists in regressing to that depth value pixel-wise.
 The input of the developed method is an image $\mathbf{I}$ and the output a depth map $\mathbf{Z}$.
 
-\label{s:regression_methods}
+\label{sec:regression_methods}
 
 \begin{center}
-\begin{table}[h!]
-\begin{tabular}{| c | c | c | c | c |}
-\hline
-\textbf{Year} & \textbf{Authors} & \textbf{Task} & \textbf{Loss} \\
-\hline
-2014 & Eigen et al. \cite{Eigen} & Metric DE & Scale-Invariant\\
-2015 & Eigen et al. \cite{Eigen2} & Metric DE & Scale-Invariant + reg\\
-2016 & Laina et al. \cite{Laina} & Metric DE & berHu\\
-2016 & Chen et al. \cite{DIW} & Relative DE & ranking loss\\
-\hline
-\end{tabular}
-\caption{Summary of treated pure regression methods for depth estimation}
-\label{table:1}
-\end{table}
+	\begin{table}
+		\begin{tabular}{| c | c | c | c | c |}
+			\hline
+			\textbf{Year} & \textbf{Authors} & \textbf{Task} & \textbf{Loss} \\
+			\hline
+			2014 & Eigen et al. \cite{Eigen} & Metric DE & Scale-Invariant \\
+			2015 & Eigen et al. \cite{Eigen2} & Metric DE & Scale-Invariant + reg \\
+			2016 & Laina et al. \cite{Laina} & Metric DE & berHu \\
+			2016 & Chen et al. \cite{DIW} & Relative DE & ranking loss \\
+			\hline
+		\end{tabular}
+		\caption{Summary of treated pure regression methods for depth estimation. \label{table:1}}
+	\end{table}
 \end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -242,20 +241,19 @@ Find a summary in \ref{table:2}.
 
 % summary table
 \begin{center}
-\begin{table}
-\begin{tabular}{| c | c | c | c | c |}
-\hline
-\textbf{Year} & \textbf{Authors} & \textbf{Task} & \textbf{Formulation} & \textbf{Technique} \\
-\hline
-2018 &  Cao et al. \cite{depth_as_classification} & Metric DE & classification & CNN + CRF \\
-2018 & Fu et al. \cite{ordinal_regression} & Metric DE & ordinal regression & CNN \\
-2021 & Bhat et al. \cite{AdaBins} & Metric DE & hybrid regression & CNN + ViT\\
-2023 & Bhat et al. \cite{ZoeDepth} & Relative + Metric DE & hybrid regression & CNN + ViT\\
-\hline
-\end{tabular}
-\caption{Summary of treated bin methods for depth estimation}
-\label{table:2}
-\end{table}
+	\begin{table}
+		\begin{tabular}{| c | c | c | c | c |}
+		\hline
+		\textbf{Year} & \textbf{Authors} & \textbf{Task} & \textbf{Formulation} & \textbf{Technique} \\
+		\hline
+		2018 &  Cao et al. \cite{depth_as_classification} & Metric DE & classification & CNN + CRF \\
+		2018 & Fu et al. \cite{ordinal_regression} & Metric DE & ordinal regression & CNN \\
+		2021 & Bhat et al. \cite{AdaBins} & Metric DE & hybrid regression & CNN + ViT\\
+		2023 & Bhat et al. \cite{ZoeDepth} & Relative + Metric DE & hybrid regression & CNN + ViT\\
+		\hline
+		\end{tabular}
+	\caption{Summary of treated bin methods for depth estimation. \label{table:2}}
+	\end{table}
 \end{center}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,9 +1,9 @@
 %-------------------------------------------------------------------
 \chapter{Methods}
-\label{c:methods}
+\label{chap:methods}
 %-------------------------------------------------------------------
 
-%\epigraph{\enquote{I believe that inside every tool is a hammer.}}{\emph{Adam Savage}}
+\epigraph{\enquote{The illusion that we understand the past fosters overconfidence in our ability to predict the future.}}{\emph{Daniel Kanheman}}
 
 \section{Thoughts on Interpretability}
 In the fields of philosophy, psychology and cognitive science there are a lot of mature works addressing the problem of what an explanation is and how people evaluate its quality, but most of XAI research is based on an intuitive idea of what constitutes a “good” explanation because seeking explanations as defined by such social sciences would lead to failure \cite{Miller}.
@@ -100,7 +100,16 @@ But when it comes to visually reasoning about an image depth, these cues come ha
 Nevertheless, assuming humans have the right utility instruments and are properly trained, it still has to be empirically proven that they are able to perform a meaningful depth estimation as machines do pixel-wise.
 
 Hence, it can be safely stated that humans can perceive depth but, right now, they cannot perform depth estimation as formulated in computer vision.
-Depth estimation is not a human task.
+\textit{Depth estimation is not a human task}.
+
+Nevertheless, further investigating human ability to reconstruct precise depth maps could yield to new insights in the field of DE.
+For instance, humans are able to do 3D modeling that consists in constructing a geometrical model of some object or character.
+Sculptures are also an example of geometrical models of objects and people.
+These human capabilities are based on "multiple images", in the sense that there is no restriction to which information humans have access to while performing these tasks.
+I conjecture that humans would be able to produce depth maps from single images by giving an initial guess of the depth map of the scene and then iteratively optimizing it by comparing a novel rendered view of the scene with the input image.
+In fact, usually artists base their modeling skills on how good things look rather than some precise rigorous methodology.
+But this needs to be proven.
+This idea could be used for building DE models that do the same, supported by some ancillary pre-trained networks embedding the knowledge about image appearances.
 
 \vfill
 
@@ -138,6 +147,28 @@ Deep learning is necessary.
 Notice though that, while deep learning is necessary, it is not said that the entire procedure must be an end-to-end DL model.
 There is room for complementary procedures, possibly interpretable, that support the learned models.
 This is where my personal experimental contribution comes in place.
+
+\section{Evolutionary perspective}
+Artificial Intelligence (AI) is about producing algorithms that can compete with human intelligence in solving certain tasks.
+While it outperforms humans in specific tasks (like playing chess), it is not able yet to solve general tasks (e.g. driving a car).
+Humans cognitive capabilities are the result of billions of years of evolution.
+AI research is trying to beat the byproducts of evolution.
+I argue that evolution cannot be beaten and that a different approach is required in AI research.
+I will base my arguments on a simple model of evolution, found also in the field of evolutionary computing.
+
+A species can be modeled as a population of instances of a certain neural architecture.
+Each individual has its own network initialization and goes through a training phase (youth) and an evaluation phase (mature age).
+Each generation of individuals create its offspring.
+Newborn individual can present modification in the architecture topology.
+Only a percentage of individuals reproduce and the better they perform, the more likely are to reproduce.
+Parents can teach their offspring.
+During their lives, individuals gather data from the world and train on them.
+By educating their children, parents transmit relevant knowledge they acquired.
+
+Under this model, evolution is a massive Neural Architecture Search (NAS) performed for millions of years onto the human species.
+Even with the advent of new technologies, it's unlikely that better solutions than those found by evolution can be found by humans.
+In a recent paper \cite{udandarao2024zeroshotexponentialdatapretraining} (quoting the authors) it was found that, far from exhibiting "zero-shot" generalization, multimodal models require exponentially more data to achieve linear improvements in downstream "zero-shot" performance, following a sample inefficient log-linear scaling trend.
+This supports the idea that data will never be enough.
 
 \section{My approach to Interpretable DE}
 MDE is not a human task and hence humans cannot solve it.
@@ -236,7 +267,7 @@ Here, a theoretical discussion is made and a pipeline is designed.
 Experiments will follow in future works.
 
 The depth fusion part must be as interpretable as possible since a black-box model has been employed for the DE part.
-In the section \ref{s:miscellaneous}, a tile-based method for DE was discussed: PatchFusion \cite{PatchFusion}.
+In the section \ref{sec:miscellaneous}, a tile-based method for DE was discussed: PatchFusion \cite{PatchFusion}.
 While extremely powerful, it is an end-to-end non-interpretable deep learning model that estimates depth patch-wise and subsequently merge them.
 % BoostingDepth \cite{BoostingDepth} instead uses a two-stage method with a pre-trained MiDas \cite{MiDas} model for depth estimation and a UNet architecture for merging, but still the overall algorithm is not interpretable.
 % The older works from Konrad et al. \cite{konrad2} and Karsch et al. \cite{DepthTransfer}, and a very recent work from Rey-Area et al. \cite{360MonoDepth}, use handcrafted pipelines for the depth fusion part.

@@ -125,6 +125,7 @@ NYUv2 dataset is frequently used for jointly learning multiple tasks for it prov
 As for the case of KITTI, here only the depth information will be relevant.
 
 \section{Metrics and Evaluation}
+\label{sec:metrics}
 
 For quantifying the performance of depth estimation algorithms, various metrics are used in the literature.
 Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and its corresponding groud-truth depth map $\mathbf{Z}_{gt}$, these metrics are defined as in table \ref{t:metrics}.
@@ -149,8 +150,7 @@ Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and i
 \caption{
     Frequently used metrics in depth estimation literature.
     Common thresholds for $\delta$ are $1.25$, $1.25^{2}$ and $1.25^{3}$.
-    \label{t:metrics}
-}
+    \label{t:metrics}}
 \end{table}
 \endgroup
 

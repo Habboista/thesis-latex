@@ -26,11 +26,12 @@
 \usepackage[binding=0.8cm]{styles/layaureo} % better handling of A4 format
 \usepackage{tocbibind} 
 \usepackage[labelfont=bf]{caption}[2004/07/16] % format of captions
-\usepackage{subfig}
-
+%\usepackage{subfig}
+\usepackage{subcaption}
+\usepackage{chngpage}
 % tables
-\usepackage{booktabs}
-\usepackage{tabulary}
+%\usepackage{booktabs}
+%\usepackage{tabulary}
 
 % citations at the beginning of each chapter
 \usepackage{epigraph}
@@ -64,7 +65,7 @@
 
 \usepackage{verbatim}
 \usepackage{courier}
-\usepackage{float}
+%\usepackage{float}
 
 \lstset{numbersep=5pt,
 numberstyle=\tiny,
