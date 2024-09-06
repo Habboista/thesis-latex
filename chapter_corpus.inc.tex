@@ -131,9 +131,71 @@ Since human knowledge is limited for these tasks (by definition), whether the la
 
 \section{Interpretability of Depth Estimation}
 \label{sec:interpretability of depth estimation}
-Humans can perceive depth.
-Formally (assuming a "formally" is even meaningful), in what sense humans perceive depth?
-The following discussion is about personal observations based on introspection.
+
+Depth estimation could be formally stated as the task of computing for a given image $\mathbf{I}$ its depth map $\mathbf{Z}$.
+Can this problem be mathematically solved?
+
+An image is the result of an image formation process which involve photons hitting a camera that measures their wavelength.
+Photons coming from different directions contribute to determining the color of a pixel, but there is one direction in particular that contributes more.
+A photon could bounce and be deviated before ending up traveling along such direction.
+Eventually the photon will hit a camera photo-cell and contribute to image formation.
+The point in space where the photon was last deviated is associated to the pixel corresponding to the photo-cell.
+Ideally, the $Z$ coordinate of such a point is the depth value of that pixel in the desired (metric) depth map.
+
+The resulting image can be displayed using monitors, devices that can emit photons from a grid of photo-emissive elements.
+While the image formation process is noisy, the displayed image will appear neat.
+The reason for this is that the human brain cleans the information it receives.
+Reality is noisy, vision deals with such noise continuously.
+Through human perception, pixels are perceptually aggregated and form uniform visual units.
+In this phase, many pixels are perceptually associated to different points in space other than those determined above.
+
+The \textit{desired} depth map is hence defined by human visual perception that solves semantic ambiguities in the input signal, rather than by a well-defined physical process.
+This implies that depth estimation (in the wild) is neither solvable nor definable using only mathematical language and reasoning.
+
+\vspace{1cm}
+
+If assumptions about images are made and the problem is formulated in the multi-view setting, it can be approached mathematically for the most part of it.
+In the binocular setting, two images captured from different view-angles are used for estimating geometry of the scene under the form of disparity maps.
+Epipolar geometry~\cite{multiview} studies the geometrical constraints of images capturing the same scene from different perspectives.
+It can be used for determining depth values of corresponding pixels between the two views.
+The problem is then reduced to finding these correspondences, since the rest is a mathematical and well-known reconstruction.
+
+As stated, assumptions are needed for reducing to the minimum semantic ambiguities.
+Surfaces in the scene should appear in the same way from different perspectives, i.e. be Lambertian surfaces.
+For instance, a mirror appears differently based on what's reflecting.
+Transparent materials exhibit a similar problem.
+For successfully determining correspondences between the views, occlusion should be minimum and happen as distant from the camera as possible, otherwise it will invalidate a lot of pixels.
+Another relevant factor is high frequency textures which make it impossible to successfully match pixels from different images belonging the that region.
+
+\vspace{1cm}
+
+Monocular depth estimation (MDE) is by no means solvable using only mathematical reasoning.
+In fact, estimating a depth map from a single image is an ill-posed problem.
+It is not possible to infer geometrical information about which path photon traveled from a single image.
+Human semantic knowledge (based on binocular viewing experience) solve visual ambiguities and produce a perception of depth.
+
+Is human depth perception relevant in machine depth estimation?
+Ground truth data is acquired using physical sensors or by rendering depth maps in graphical engines, hence it could be argued that humans have nothing to do with the task.
+This would be a fallacy since ground truth data is pre-processed by human experts before resulting in ground truth depth maps.
+Also, ground truth depth maps are usually incomplete (either sparse or with holes in them) and researchers have preferences on how MDE models should perform where the ground truth information is missing.
+Finally, graphical engines are based on how humans organize physical reality and rendering algorithms are optimized to output photorealistic images based on simplified physical processes.
+
+\vspace{1cm}
+
+While it is difficult for humans to give accurate metric estimates of distances (and hence of depth), relative distance values can be estimated.
+In creating the DIW dataset \cite{DIW}, people were asked to tell which pixel was closer to the camera given another through a crowd-sourcing process.
+More accurate dense relative depth maps could be estimated with software aided image measurements.
+If such measurements are performed in stereo images or frames of a video, metric depth estimation is feasible.
+It is possible also to generate digital versions of real world scenes.
+Artists can 3D model objects and reproduce environments.
+Assisted by software that renders the digital scene and compares it with the reference image it could be possible to perform a precise depth annotation.
+This further supports the claim that depth estimation is not a purely mathematical task and is about imitating human cognition and perception of the world.
+
+\vspace{1cm}
+
+It can be concluded that \textit{MDE is a human task}.
+
+\vspace{1cm}
 
 Humans don't perceive the environment neither in terms of pixels, nor through static entities like images are.
 It is difficult to align human depth perception to the formulation of machine depth estimation.
@@ -166,7 +228,6 @@ This idea could be used for building DE models that do the same, supported by so
 \vfill
 
 \paragraph{The Necessity of Deep Learning in Depth Estimation.}
-Let's rewind a little and go back to the concept of explanatory gap (EG).
 A significant aspect of the EG is the fact that it is about the general difference in expressiveness of natural language and mathematical language, thus it is not only about explanations.
 In order to clarify this point, consider that, when designing an algorithm for solving a certain \textit{problem formulated in natural language}, a developer represents the entities relevant to the problem and relations between them into mathematical language.
 Since the natural language is more expressive than mathematical one, it could happen that some concepts cannot be faithfully translated into mathematical representations (as already noted for training objectives of complex learning algorithms and their explanations).

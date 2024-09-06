@@ -1,23 +1,17 @@
 %-------------------------------------------------------------------
 \chapter{Introduction}
-\label{c:intro}
+\label{ch:intro}
 %-------------------------------------------------------------------
 
+This thesis is in the field of computer vision, specifically single image depth estimation.
+
 \section{Background}
-Under the name "Depth Estimation" (DE) a lot of techniques appear, but there is no formal definition that considers them all.
+Under the name of "Depth Estimation" (DE) a lot of techniques appear, but there is no formal definition that considers them all.
 I would define DE as the study of algorithms that process one or more images of a scene and output information about its geometry.
 There exist many approaches to do this as well as many problem settings.
 The setting of this thesis is \textit{Single Image Depth Estimation}, also called \textit{Monocular Depth Estimation}.
 It refers to a depth estimation problem based on only one image of the scene.
-
-As it is often the case in computer science, there is no such thing as the best algorithm for solving a given problem, rather there are several and each with its own advantages and disadvantages, some more successful than others.
-Brilliant minds have contributed to this field and in this chapter I will present some of their ideas.
-
-
-This is not mathematics, there aren't rigid formal definitions and formulas and symbols don't follow strict rules.
-Notation serves clarity.
-The treatment is informal though mathematically informed.
-
+As of today, this is done by assigning to each image pixel a depth value corresponding to the depth of the object that forms that pixel in the camera coordinate system.
 
 \textbf{Images} are what we want to extract geometry informations from.
 Images are represented as two (gray images) or three (color images) dimensional arrays of limited positive numbers.
