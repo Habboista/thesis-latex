@@ -144,6 +144,7 @@ An iterative process compares the rendered view with the input image and adjusts
 Eventually the scene CAD model is returned.
 
 \section{Deep Learning and Interpretability}
+\label{sec:deep learning and interpretability}
 Since the advent of machine learning (ML) and artificial intelligence (AI), there has been a paradigm shift in solving problems in a lot of fields.
 Instead of designing an algorithm that directly solves a given task, a learner is delegated to find a good-enough solution in a pool of possible solutions by solving an optimization problem defined on a set of data points \cite{ML_book}.
 Among all, deep learning (DL) techniques are the most successful ones and have a much superior performance than the statistical learning counterparts in the most challenging tasks (vision, language, autonomous agents, …), provided data is enough.
@@ -167,8 +168,10 @@ While, Kim et al. \cite{examples_enough} give a more operative definition of int
 Without limiting the discussion to a precise definition, interpretability can be thought as an intuitive understandability of an AI system and the way it produces predictions.
 XAI addresses the problem of developing methods for generating explanations accounting for such predictions (post-hoc methods) or design principles to build systems intrinsically more interpretable (ante-hoc methods).
 
-There exist some intrinsically interpretable models such as sparse linear regression, shallow decision trees or K-nearest neighbors \cite{molnar2022} \cite{XAI_review} that because of their limited size and mathematical complexity are easily understandable by a human expert but suffer from low accuracy, especially when tackling complex tasks.
+There exist some intrinsically interpretable models such as sparse linear regression, shallow decision trees or K-nearest neighbors \cite{molnar2022} \cite{XAI_review}.
+Their limited size and mathematical complexity are easily understandable by a human expert but suffer from low accuracy, especially when tackling complex tasks.
 In fact, a general trade-off between accuracy and transparency is known to exist in AI.
+An algorithm is said to be transparent if it is understandable by a human without the use of explainability techniques.
 XAI studies models that traded off transparency for high accuracy by developing methods for clarifying their behavior after training has been performed (post-hoc interpretability methods), or aims at designing models that try to alleviate the limitations of that trade-off in advance (ante-hoc interpretability methods), for instance by being trained to return both a prediction and an explanation for it. 
 
 There are other criteria for classifying interpretability criteria \cite{molnar2022}.
@@ -221,6 +224,7 @@ Only a thorough investigation of the AI system functioning is able to reveal the
 By inspecting an AI model with the above-mentioned interpretability techniques, a human can acknowledge the presence or absence of properties related to these five aspects.
 
 \section{Single Image Depth Estimation and Interpretability}
+\label{sec:SIDE and interpretability}
 There are a lot of works about interpretability of neural networks for vision, but the most studied tasks are image classification, object detection and image generation.
 Despite the growing interest for monocular depth estimation, driven also by its relevance in robotics and autonomous driving applications, its interpretability side is yet to be deepened.
 I will review here three relevant works on interpretability of single image depth estimation models that tackles the problem from different perspective:

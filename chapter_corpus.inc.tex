@@ -5,23 +5,23 @@
 
 \epigraph{\enquote{The illusion that we understand the past fosters overconfidence in our ability to predict the future.}}{\emph{Daniel Kanheman}}
 
-\section{Thoughts on Interpretability}
-In the fields of philosophy, psychology and cognitive science there are a lot of mature works addressing the problem of what an explanation is and how people evaluate its quality, but most of XAI research is based on an intuitive idea of what constitutes a “good” explanation because seeking explanations as defined by such social sciences would lead to failure \cite{Miller}.
-There is an explanatory gap (EG) between natural language and mathematical language expressiveness which undermines the possibility to rigorously define what an explanation is in mathematical terms, necessary for applying it to artificial intelligence systems.
-This same gap is also the reason for which training objectives expressed as mathematical functions do not account for the complexity of real-life goals involved in tasks such as driving \cite{Zablocki2022}.
+\section{Limits of XAI}
+\label{sec:limits of XAI}
+In the fields of philosophy, psychology and cognitive science there are a lot of mature works addressing the problem of what an explanation is and how people evaluate its quality, but most of eXplainable Artificial Intelligence (XAI) research is based on an intuitive idea of what constitutes a “good” explanation because seeking explanations as defined by such social sciences would lead to failure~\cite{Miller}.
+There is an \textit{Explanatory Gap} (EG) between natural language and mathematical language expressiveness which undermines the possibility of rigorously defining what an explanation is in mathematical terms, necessary for applying it to artificial intelligence systems.
 Hence, research in the field of XAI is driven by mathematical heuristics that result in intuitively “good” explanations.
-However, humans are known to be highly biased when taking their decisions intuitively rather than through critical analysis \cite{Kahneman}. 
+However, humans are known to be highly biased when taking their decisions intuitively rather than through critical analysis~\cite{Kahneman}. 
 
-To show how humans are not good at intuitively judging what a good explanation is, consider for instance the family of XAI post-hoc methods in computer vision that produce a saliency map (a.k.a. heat map) as explanation (e.g. GradCAM \cite{GradCAM}).
+To show how humans are not good at intuitively judging what a good explanation is, consider for instance the family of XAI post-hoc methods in computer vision that produce a saliency map (a.k.a. heat map) as explanation (e.g. GradCAM~\cite{GradCAM}).
 They are so-called local methods, meaning: given an input image $\mathbf{I}$ and a model $f$, they return an explanation of its specific prediction $y = f(\mathbf{I})$.
-This explanation is a map assigning an “importance” value to image pixels.
-It is easily visualizable (usually overlaid on the input image $\mathbf{I}$, see figure \ref{fig:grad_cam}) by a human who, by visual inspection, can immediately grasp which parts of the image are supposedly more relevant for that prediction by $f$.
+This explanation is a map assigning an “importance” score to image pixels.
+It is easily visualizable (usually overlaid on the input image $\mathbf{I}$, see figure~\ref{fig:grad_cam}) by a human who, by visual inspection, can immediately grasp which parts of the image are supposedly more relevant for that prediction by $f$.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{figs/grad_cam}
     \caption{
-        Image from \cite{GradCAM}.
+        Image from~\cite{GradCAM}.
         (a) Original image.
         (b) Saliency map obtained with another method.
         (c) Saliency map (with respect to the class "cat") obtained with GradCAM and overlaid onto the original image.
@@ -31,12 +31,11 @@ It is easily visualizable (usually overlaid on the input image $\mathbf{I}$, see
 
 For example if the model solves a classification problem then the highlighted pixels represent “where it looked at” for taking the classification decision.
 However, the explanatory gap of above is filled by human cognition.
-Indeed, humans perceive images at first sight in a very rich way and decompose it directly into objects, materials, lights, shadows, reflections, geometry \cite{pinker2009mind}.
+Indeed, humans perceive images at first sight in a very rich way and decompose it directly into objects, materials, lights, shadows, reflections, geometry~\cite{pinker2009mind}.
 This implies that when looking at an image with highlighted areas (as it is when visualizing a saliency map) it is difficult to separate the rich conscious experience of the image from the actual information provided by the explanation.
 The explanation has a very specific mathematical meaning, but it will look “good” as long as the highlighted area roughly contains reasonable parts of the image involved in humanly justifying the ground truth answer.
 For instance, the model classifies an image as a cat and cat pixels are highlighted.
-Although this kind of explanation is informative of the model behavior and can be 
-effectively used for debugging purposes \cite{molnar2022}, it doesn't increase its interpretability.
+Although this kind of explanation is informative of the model behavior and can be effectively used for debugging purposes \cite{molnar2022}, it doesn't increase its interpretability.
 It doesn't inform about how the model took its decision but rather which was it. 
 
 All XAI methods suffer from similar problems: they provide seemingly “good” explanations, which appear so because of cognitive biases, but don't actually increase interpretability of the model on which they are applied because of the specific mathematical meaning of their explanations.
@@ -44,41 +43,94 @@ This is a consequence of the EG which limits human understanding of complex math
 This can be alleviated by making assumptions about the targeted task.
 The more assumptions are made when developing a model, the smaller the gap is.
 In fact assumptions simplify reality, making it more easily representable in mathematical terms and leading to a better understanding of the resulting AI model.
-Human tasks, namely tasks that humans can solve and a machine is asked to do as well, are the most susceptible to the explanatory gap.
-Examples of them are: object detection, image segmentation, question answering, speech-to-text, driving.
-Depth estimation is, generally speaking, a human task, but, if one thinks more carefully, it probably isn't.
-It'll be discussed later.
-For solving this kind of tasks, humans use their cognitive abilities and the tasks themselves are defined by those abilities.
-Because it's difficult to abstract from their own cognition, when dealing with such tasks humans are more easily biased.
-Also, simplifying the problem by making assumptions is hardly ever possible.
 
-\vfill
+This kind of flaws can be found also in the methods discussed in section~\ref{sec:SIDE and interpretability}.
 
-The methods discussed in the previous section need a review after this discussion.
-Let's start from the work of You et al. \cite{towards_interpretable}.
-The authors assume that depth selectivity of feature channels is a measure of interpretability without explaining why.
-They rather give general analogies with other works where a similar dissection of the network behavior was done, but for different tasks.
-The proposed interpretability measure is, in my opinion, arguably a bad measure.
-Consider a depth estimation model based on a bin method, in such methods there usually are "bin discriminating layers" (BDLs) that are specialized in classifying the input pixels with a bin label through the activation of a feature map.
+\vspace{1cm}
+
+Let's start from the work of You~et~al.~\cite{towards_interpretable}.
+The authors assume that \textit{depth selectivity} of feature channels is a measure of interpretability without explaining why.
+They rather give general analogies with other works where a similar dissection of the network behavior was done but for different tasks.
+The proposed interpretability measure is arguably a bad measure.
+Consider a \textit{bin} depth estimation method (refer to section~\ref{sec:bin_methods} for examples).
+In such methods there are usually "bin discriminating layers" (BDLs) that are specialized in classifying input pixels with a bin label through the activation of a feature map.
 Depth selectivity measures how much some layers of the model work like a BDL, so for instance a bin method in correspondence of BDLs would appear to be highly interpretable.
 But BDLs are the second-to-last step in depth estimation based on bin methods, where the last is just an aggregation of the bin scores into a depth value.
 Hence, for You et al., an interpretable network that performs depth estimation is just a network that solves the task in early layers, i.e. a smaller network.
 
-In "Visualization of Convolutional Neural Networks for Monocular Depth Estimation" \cite{Hu}, Hu et al. define their explainability method (in this case a saliency method) based on its output.
+\vspace{1cm}
+
+In "Visualization of Convolutional Neural Networks for Monocular Depth Estimation"~\cite{Hu}, Hu~et~al. are biased in defining their explainability method (in this case a saliency method).
 They repeatedly notice that if the mask $\textbf{M}$ is not properly optimized the result will be "unexpected" or not "useful".
-The mask is defined in such a way that the explanation is meaningful to humans.
-So, while other formulations are mathematically equivalent for what concerns the main optimization objective, the regularization is chosen based on the resulting appearance.
-Hence, the authors fall in a circularity.
-Notice that their objective is not to output a good-looking image, but to investigate the behavior of the model.
+So, while other formulations of the optimization problem defining such a mask are mathematically equivalent, the regularization is chosen based on the resulting appearance.
+Hence, the authors are biased in picking up the explanation that satisfy their expectations about how it should look like.
+Notice that their objective is \textit{not} to output a good-looking image, but to investigate the behavior of the model.
 While their visualization method can be useful, it is based on an arbitrary concept of "relevance" for pixels contributing to the prediction.
 
-The first work discussed from Dijk et al. \cite{Dijk} is, in my opinion, a good investigation on what certain neural networks do.
-It is not \textit{explaining} their behavior, but it is informative nonetheless and sheds light on various potential biases of models trained on the KITTI dataset.
-For what concerns the current discussion I don't feel like criticizing it.
+\vspace{1cm}
 
-\vfill
+The first work discussed in section~\ref{sec:SIDE and interpretability}, from Dijk~et~al.~\cite{Dijk}, sheds light on various potential biases of models trained on the KITTI dataset.
+It is not meant to \textit{explain} their behavior, but it is informative nonetheless and uses valid methods for investigating models, that is: altering input images and looking for correlations in the resulting depth maps.
+The main problem, related to what was discussed in this section, is about how the authors linguistically frame their results.
+In fact, the probed model is said to "detect changes in the camera pitch", "recognize objects" and "rely on vertical position of objects".
+While this way of expressing the results of the experiments is a useful abstraction, it risks attributing capabilities to the model that it does not have.
+Humans are biased.
+Consider a model given an image depicting a car as input.
+Assume that the shape of the car is present in the predicted depth map.
+When looking at it, it is immediate to say that the model \textit{recognized} the car.
+What does it mean for an algorithm to "recognize an object" in an image?
+Is the shape of a car present in the depth map because the network "recognized the car" or because of something else?
+Natural language describing numerical results can be misleading.
 
-\paragraph{Depth estimation and Human Tasks.}
+\vspace{1cm}
+
+\section{Limits of Interpretability}
+\label{sec:limits of interpretability}
+
+In the previous section the concept of \textit{Explanatory Gap} (EG) was introduced.
+The EG refers to the impossibility of mathematically defining what an explanation is because the richness of human language, psychology and cognition, that define what an explanation is for humans, is not captured by formal languages.
+From now on, "explanatory gap" will more generally refer to the discrepancy between natural language and mathematical language expressiveness, which consequences go beyond the field of XAI.
+In fact, this same gap is also the reason for which training objectives expressed as mathematical functions do not account for the complexity of real-life goals involved in tasks such as driving~\cite{Zablocki2022}.
+Another example is in section~\ref{sec:metrics} where it was observed that satisfying metrics for depth estimation are yet to be found.
+
+The EG has important consequences on interpretability of algorithms.
+In order to clarify this point, consider that, when designing an algorithm for solving a certain problem, a developer represents the entities relevant to the problem and relations between them into mathematical language.
+Since the natural language is more expressive than mathematical one, it could happen that some concepts cannot be faithfully translated into mathematical representations.
+The transparency of an algorithm (concept introduced in section \ref{sec:deep learning and interpretability}) comes from the human understanding of its passages which are supposed to represent meaningful operations.
+
+Entities and relations are represented in form of data structures.
+Computations and data manipulations can alter the meaning of such representations.
+For instance, if a variable contains a positive real number that represents a distance, storing a negative value in it does not preserve its representation.
+Ideally, in each step of an algorithm it should be possible to interpret what's happening by referring to what variables and functions represent.
+In a neural network this is hardly possible since only its input and its output represent something meaningful to humans and what's in between is left to be learned by the model during training.
+Theoretically, if extensive studies are performed on a specific model with fixed weights, a more in-depth understanding is possible, but it is an expensive process that, to my knowledge, no one has yet accomplished.
+Researchers only have general ideas of what intermediate feature maps represent and don't analyze a single instance of a model, rather the focus is on classes of models defined by a certain architecture.
+Deep learning is mainly used in tasks that are difficult to tackle via a formal and interpretable approach.
+
+It can be concluded that tasks involving high-level difficult-to-mathematically-represent requests will always have a certain degree of non interpretability.
+This has a fundamental consequence on the whole field of XAI: interpretability methods cannot return arbitrarily good explanations for algorithms solving such tasks.
+Most importantly: there is an upper limit to intrinsic interpretability (transparency) of algorithms task-wise dependent.
+
+Not all tasks are affected in the same way by this fact.
+
+Formal tasks (e.g. sorting an array or searching in a graph) are not affected at all.
+They are naturally expressed in mathematical terms and formal language is sufficient for solving eventual ambiguities.
+Their solutions are completely understood and interpretable as they are justified by formal proofs or by rigorous arguments.
+
+The most susceptible tasks to the explanatory gap are those that require imitating aspects of human cognition or linguistic abilities.
+Examples are object detection, image segmentation, question answering, speech-to-text, driving.
+This kind of tasks, here called \textit{human tasks}, cannot be tackled with a pure formal approach and needs semantic knowledge of the (perceived) world.
+Because it's difficult to abstract from their own cognition, when dealing with such tasks humans are more easily biased.
+Also, simplifying the problem by making assumptions is hardly ever possible, hence the formal approach is not viable.
+
+Finally, there are tasks that deal with poorly understood parts of reality.
+It is not clear how the EG affects them.
+Examples are: predicting financial market prices or processing data coming from cutting-edge physics experiments.
+Usually, experts apply both mathematical models (for instance the Black-Scholes model in finance) and black-box techniques when approaching them.
+Since human knowledge is limited for these tasks (by definition), whether the latter techniques are necessary (implying a degree of intrinsic non-interpretability) or not is yet to be discovered.
+
+\section{Interpretability of Depth Estimation}
+\label{sec:interpretability of depth estimation}
 Humans can perceive depth.
 Formally (assuming a "formally" is even meaningful), in what sense humans perceive depth?
 The following discussion is about personal observations based on introspection.
