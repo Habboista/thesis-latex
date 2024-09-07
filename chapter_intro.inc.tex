@@ -10,6 +10,7 @@ There exist many approaches to do this as well as many problem settings.
 The setting of this thesis is \textit{Single Image Depth Estimation} (SIDE), also called \textit{Monocular Depth Estimation} (MDE).
 It refers to a depth estimation problem based on only one image of the scene.
 As of today, this is done by assigning to each image pixel a depth value corresponding to the depth of the object that forms that pixel in the camera coordinate system, see figure~\ref{fig:coordinates} for an illustration.
+
 Images are represented as numerical tensors and the depth values corresponding to each pixel are organized in tensors as well, called depth maps.
 The mapping from an image to a depth map can be realized by some parametrized function, in deep learning these are called neural networks.
 Datasets gather examples of desired input-output pairs realizing this mapping and, thanks to a training procedure, this information can be used for tuning said parameters.
@@ -25,6 +26,7 @@ In figure~\ref{fig:depth_maps_example} some depth maps are depicted.
         \label{fig:depth_maps_example}
     }
 \end{figure}
+
 Datasets are created by acquiring images and depth information of the scene simultaneously through the use of depth sensors~\cite{KITTI, NYUv2}.
 An alternative is to let humans annotate images~\cite{DIW}, but a different kind of depth information is collected in this way.
 In fact, depth values can be \textit{metric} or \textit{relative}.
@@ -46,7 +48,7 @@ Hence, SIDE is often framed as a relative depth estimation problem.
 
 Two images taken from different view-angles can be used for partially reconstructing depth using epipolar geometry~\cite{multiview}.
 This fact is used in binocular depth estimation models, but it can also be used for inferring the ground truth depth map when it is unknown.
-The self-supervised learning approach to SIDE is based on these ideas, it is less effective but it does not require expensive annotated data \cite{SfMLearner}.
+The self-supervised learning approach to SIDE is based on these ideas, it is less effective but it does not require expensive annotated data \cite{monocular_SSL}.
 %During testing time all monocular depth estimation models are able to infer depth from a single image, however during training the kind of data they require can vary from tecnique to tecnique.
 %Chapter 2 treats these differences. In its "Supervised" section models trained on ground-truth data are presented, while in the "Self Supervised" one ground-truth is not necessary and data can be video footage or stereo pairs.
 %Instead in "Classic" techniques not necessarily based on deep learning(and hence on datasets) are reviewed.
@@ -65,7 +67,7 @@ Single Image Depth Estimation (SIDE) saw a growing research interest in the last
 Its popularity is to be attributed to advancements in robotics and autonomous driving which could benefit from solving this task.
 In fact, depth sensors are expensive and not reliable in various scenarios (for instance in presence of reflective surfaces).
 Stereo rigs are instead difficult to use since constant calibration is required.
-Hence, if depth could be accurately estimated by using only a single RGB camera, research in navigating real-world environments would be boosted.
+Hence, if depth could be accurately estimated by using only a single RGB camera, research in autonomous navigation of real-world environments would be boosted.
 
 Deep learning is the leading methodology for tackling SIDE.
 The research trend is to train large models on various datasets to achieve zero-shot performances, meaning to generalize on unseen datasets.
@@ -84,28 +86,35 @@ An example of such an architecture is illustrated in figure \ref{fig:flow_net}.
     }
 \end{figure}
 As noted by Bhat~et~al~\cite{ZoeDepth}, larger backbones achieve better metrics.
-In recent years other architectures gained popularity, in particular transformer-based architectures \cite{denseViT, PatchFusion} and diffusion models.
+In recent years other architectures gained popularity, in particular transformer-based architectures~\cite{denseViT, PatchFusion} and diffusion models~\cite{Marigold}.
 Large Vision models (LVMs) are large neural networks trained on internet-scale data.
-Ke et al. adapted and fine-tuned a LVM based on diffusion to perform SIDE.
+Ke~et~al.~\cite{Marigold} adapted and fine-tuned an LVM based on diffusion to perform SIDE.
 The fine-tuning was performed on photo-realistic synthetic data and the resulting model showed zero-shot state of the art performances on various real world datasets.
 
 These works are opposed to the needs of robotics and autonomous driving.
 In such applications large neural networks present various problems.
 For instance, performing real-time inference on edge devices could be prohibitive.
 Most importantly, deep learning models are well known to be black-boxes.
-Their functioning is not understood by humans (it is \textit{opaque}), this fact represents a problem in a sensitive application like driving.
+Their functioning is not understood by humans (it is said to be \textit{opaque}), this fact represents a problem in a critical application like driving.
 With the growing diffusion of neural network based software in society, its interaction with consumers and the need for regulatory laws, being able to understand and interpret these algorithms is a necessity.
 Explainable Artificial Intelligence (XAI) deals with this problem by developing methods for explaining deep learning models behavior~\cite{XAI_review}.
 Despite the popularity of XAI in the research community, only few works address the problem of explainability in SIDE~\cite{Hu, Dijk, towards_interpretable}.
 
 Objective of this thesis is to investigate the concept of interpretability, central to XAI, and its relation to SIDE.
 It is shown that some XAI research methods are biased and that there exist theoretical limitations to explainability that have consequences on this whole field of research.
-In particular, it is argued that solving SIDE implies a minimum degree of opaqueness and that non-interpretable methods must be used to some extent.
+Such limitations stem from the inability of mathematical language to capture human related concepts like the one of "explanation", this fact is referred to as \textit{explanatory gap} (EG) throughout the thesis.
+It is argued that since SIDE involves aspects of human cognition, it is affected by the EG as well.
+Solving the SIDE task implies a minimum degree of opaqueness in the resulting method.
+This makes the use of non-interpretable components necessary for solving the depth estimation task.
 
-To reduce the impact of black-box methods on the overall interpretability of a SIDE pipeline, the idea of simplifying a learning problem is introduced.
-Toy experiments test this approach applied to patch-wise depth estimation.
-Finally, an interpretable pipeline for merging partial depth estimates from the simplified learning problem is designed.
-Results suggest that this practice can be beneficial.
+To reduce the impact of black-box methods on the overall interpretability of a SIDE pipeline, such methods must be confined to sub-tasks, leaving space for interpretable components.
+The responsibility of the final prediction is shared between non-interpretable and interpretable components.
+To further transfer responsibilities to the latter, the learning problem solved by the former has to be simplified.
+Toy experiments are then performed to test this approach applied to patch-wise depth estimation.
+The simplification of the learning problem is performed by carefully choosing the training patches, pre-processing them and using a different training loss and evaluation metrics. 
+Finally, an interpretable pipeline for merging partial depth estimates from the simplified learning problem is designed, but not tested.
+Results suggest that the practice of simplifying the learning problem can be beneficial since the model scores better metrics on the simplified learning problem.
+In future works, the ability of the interpretable pipeline to exploit partial predictions must be assessed.
 
 The rest of the thesis is organized as follows:
 \begin{itemize}

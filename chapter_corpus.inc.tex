@@ -317,7 +317,19 @@ Sampled patches are further processed before being fed to the network so to furt
 Since patches cropped far from the principal point of the camera present perspective distortion, a warping procedure is applied to eliminate such distortions.
 The warping procedure ensures that each sampled patch is captured by a virtual camera with its principal point in the center of the patch.
 Camera parameters are needed in order to do this.
-The procedure is the following:
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.4]{figs/warping}
+    \caption{
+        The image shows the warping procedure applied to a point sampled with the corner strategy.
+        Top-left: the image $\mathbf{I}$ from which to extract patches.
+        Top-right: detected corners. The orange point is the selected corner. The red point is the principal point.
+        Bottom-right: the warped and cropped image $\tilde{\mathbf{I}}$.
+        Bottom-left: the corresponding image regions in the original image.
+        \label{fig:warping}
+    }
+\end{figure}
+The procedure, illustrated in figure \ref{fig:warping}, is the following:
 \begin{enumerate}
     \item{Sample a point $p$ from image $\mathbf{I}$.}
     \item{Compute the camera transformation that maps $p$ to the principal point.}
@@ -362,6 +374,15 @@ The obtained images have various decreasing sizes:
 Where $w_{min}$ and $h_{min}$ represents the minimum shape of the non-blurred area.
 The radially blurred patch is obtained by concentrically overlapping this patches on top of each other, starting from the most blurred one.
 This procedure doesn't apply a proper radial blur, but it produces a similar visual effect.
+An example of patches transformed using the outlined procedure can be found in figure \ref{fig:blur}.
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.4]{figs/blur}
+    \caption{
+        Examples of radially blurred patches extracted from a single image.
+        \label{fig:blur}
+    }
+\end{figure}
 The blurring smooths out the data manifold and reduces its dimensionality.
 The informal reason for this is that patches with high-frequency details around the border are mapped to lower-frequency versions, which are less numerous in this finite sampling context.
 The new space of radially blurred patches is not a subset of the initial patch space, since the radial blur is not naturally present in considered images.

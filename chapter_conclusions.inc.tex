@@ -2,8 +2,8 @@
 \chapter{Conclusions}
 \label{ch:conc}
 %-------------------------------------------------------------------
-\epigraph{\enquote{All those moments will be lost in time, \\
-like tears in rain.}}{\emph{Blade Runner}}
+%\epigraph{\enquote{All those moments will be lost in time, \\
+%like tears in rain.}}{\emph{Blade Runner}}
 
 This chapter summarizes the work done and the obtained results, future work is finally suggested.
 
@@ -15,7 +15,7 @@ Backbones used in MDE architectures evolved with those of image classification, 
 Most recently, image generation backbones like StableDiffusion~\cite{StableDiffusionV2} were employed, showing incredible performances \cite{Marigold}.
 As the models scaled in size, datasets didn't due to expensive data acquisition procedures.
 In turn, synthetic datasets \cite{VirtualKITTI2, Hypersim} are improving and becoming a viable alternative as proved by Marigold~\cite{Marigold}.
-Thanks to the development of the MiDas~\cite{MiDas} training paradigm, datasets with different formats could be jointly used for training large models.
+Thanks to the development of the MiDas~\cite{MiDas} training paradigm, heterogeneous datasets could be jointly used for training large models.
 
 While DL is achieving higher and higher peak performances on MDE benchmarks, explainable artificial intelligence (XAI) isn't keeping the pace.
 Only few relevant works have approached explainability of MDE models~\cite{Hu, Dijk, towards_interpretable}.
@@ -23,17 +23,18 @@ As MDE becomes more popular in the fields of robotics and autonomous driving, ex
 
 This is further aggravated by the theoretical results of this thesis.
 In fact, in section~\ref{sec:limits of XAI} it was discussed how XAI adopts biased research methodologies and that there are fundamental epistemological limits to explaining DL models behavior.
-The explanatory gap (EG) was introduced as the discrepancy between natural and mathematical language expressiveness and it was accounted responsible for such limits.
+The explanatory gap (EG) was defined as the discrepancy between natural and mathematical language expressiveness and it was accounted responsible for such limits.
 Narrowing the discourse to interpretability of MDE methods, in sections~\ref{sec:limits of interpretability} and~\ref{sec:interpretability of depth estimation} it was argued that it is impossible to obtain an MDE algorithm fully understandable by humans.
 The reasons for this are to be found in the EG implications for human tasks, since MDE was proven to be a human task itself.
 
 Acknowledging these theoretical limitations and trying to achieve the maximum possible interpretability, in section \ref{sec:hybrid} a tile-based approach is taken.
-MDE is decomposed into estimating depth patch-wise and merging the partial results into the final predictions.
+MDE is decomposed into (1) estimating depth patch-wise and (2) merging the partial results into the final predictions.
 Confining DL to a patch-wise problem, the best way to frame the learning problem is searched.
 Simplifying the learning problem the black-box model has to solve, transfers part of the responsibilities to the interpretable merging procedure, enhancing overall understandability.
 
-Experiments reported in chapter~\ref{ch:results} prove that the proposed network better learn the simplified problem if only interesting patches are used for prediction and a geometrical correction of camera distortions is applied.
-Radial blurring proved to worsen model performances, this is likely due to architecture structure.
+Experiments reported in chapter~\ref{ch:results} prove that the proposed network better learn on the simplified problem if only two out of the three proposed simplifications are applied.
+These two are: using only interesting patches for prediction and geometrically correcting camera distortions.
+The third one, radial blurring the patches, proved to worsen model performances, this is likely due to architecture structure.
 
 Although not tested, in section~\ref{sec:depth_fusion} a merging pipeline, complementary to the proposed alternative learning problem, was designed and discussed.
 
@@ -52,9 +53,9 @@ Also, experimenting with \textit{distance} maps will be studied in future works.
 
 Finally, can the interpretability of an algorithm be quantified?
 Can the theoretical results of this thesis be assessed experimentally?
-Can this approach to more interpretable MDE methods compete with state of the art models?
+Can this approach for developing more interpretable MDE methods, compete with state of the art models?
 
-Open questions for a future of research.
+Open questions for future research.
 
 \vfill
 
