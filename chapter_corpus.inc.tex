@@ -1,6 +1,6 @@
 %-------------------------------------------------------------------
 \chapter{Methods}
-\label{chap:methods}
+\label{ch:methods}
 %-------------------------------------------------------------------
 
 \epigraph{\enquote{The illusion that we understand the past fosters overconfidence in our ability to predict the future.}}{\emph{Daniel Kanheman}}
@@ -231,18 +231,19 @@ A non-interpretable technique \textit{must} be employed by a method that solves 
 %This supports the idea that data will never be enough.
 
 \section{Hybrid Approach to Depth Estimation}
-
+\label{sec:hybrid}
 In section~\ref{sec:interpretability of depth estimation} it was shown that non-interpretable techniques are \textit{necessary} for tackling monocular depth estimation (MDE).
 The "state of the art" methods developed in last years prove that a black-box model is also \textit{sufficient} for solving MDE.
-Though, the theoretical limitations of interpretability discussed in this chapter imply an \textit{upper limit} to understandability, not complete absence of it.
-In order to achieve the maximal degree of interpretability for MDE methods, non-interpretable techniques need to be confined to some sub-tasks so that an interpretable pipeline can be built on top of the solutions to such sub-tasks.
+Though, the theoretical limitations of interpretability discussed in this chapter imply an \textit{upper limit} to transparency, not complete absence of it.
+In order to achieve the maximal degree of interpretability for MDE methods, non-interpretable techniques need to be confined to some sub-tasks so that an interpretable pipeline can be built on top of them.
 The objective is to reduce to the minimum the responsibilities of black-box models in the pipeline.
-This would make it easier to build trust in the resulting hybrid method and increase its transparency.
+This would make it easier to build trust in the resulting hybrid method and increase its transparency to the theorized upper limit.
 
 \vspace{0.5cm}
 
 \paragraph{Learning problem.}
 Given the set $\mathcal{I}$ of images and the set $\mathcal{Z}$ of depth maps, a probability distribution $\mathcal{D}$ is defined on $\mathcal{I} \times \mathcal{Z}$.
+
 $\mathcal{D}$ specifies which input-output pairs are relevant for the task of MDE.
 $\mathcal{I}$ is defined by the set of tensors valued in $[0, 1]$ and of various shape (assuming MDE is not constrained to a fixed image resolution).
 The majority of these tensors do not define meaningful images.
@@ -251,47 +252,52 @@ An interesting image is still interesting if some noise is added to it.
 Noise gives some "thickness" to the interesting image manifold, since it can go in any direction of the space as long as it has a negligible magnitude.
 For simplicity, this fact about noise will be ignored throughout the discussion.
 
-A loss function $\mathcal{L}$ is defined on image-depth map pairs.
+A loss function $\mathcal{L}: \, \mathcal{I} \times \mathcal{Z} \rightarrow \mathbb{R}^{+}$ is defined on image-depth map pairs.
 A learning problem is defined by a (large) \textit{finite} set $S$ of sampled input-output pairs from $\mathcal{D}$ and a loss function $\mathcal{L}$.
-Solving the learning problem means to identify a set of functions $\mathcal{H}$ called "hypothesis space" \cite{ML_book} that realize the mapping $\mathcal{I} \rightarrow \mathcal{Z}$ and pick up a function $f$ that minimizes the expected value of $\mathcal{L}$ over $\mathcal{D}$.
+To solve the learning problem means to identify a set of functions $\mathcal{H}$ called "hypothesis space" \cite{ML_book} that realize the mapping $\mathcal{I} \rightarrow \mathcal{Z}$ and pick up a function $f \in \mathcal{H}$ that minimizes the expected value of $\mathcal{L}$ over $\mathcal{D}$.
 The exact solution is usually impossible to find or to prove that it was found.
 Heuristics are employed for choosing a good-enough solution $f \in \mathcal{H}$.
-The process of choosing $f$ is called \textit{training} and consists in solving an optimization problem on $S$ that involves a simplified objective and some additional constraints that improve the solution (regularization terms).
-In practice, the loss function used during training does not match the one to be globally minimized (called metric).
+The process of choosing $f$ is called \textit{training} and consists in solving an optimization problem on $S$ that involves a simplified objective and some additional constraints that should improve the found solution (regularization terms).
+In practice, the loss function used during training does not match the one to be globally minimized, called "error metric" $\mathcal{M}$ ("accuracy metric" if the problem is framed in terms of maximization).
+In fact, it is common that metrics are non-differentiable, which makes it difficult to directly optimize them in particular when using a deep learning approach. 
 Also, many metrics can be used for assessing the performance of solutions to complex task like MDE.
+This is due to the complexity of the problem that cannot be captured by a single numerical measure.
 
-Theorems have been proved about solving learning problems (see \cite{ML_book}) that express limitations of the learned solution and characterize learning problems in general.
-Relevant to this thesis is the fact that one can simplify the learning problem by changing $\mathcal{D}$, $\mathcal{L}$ or $\mathcal{H}$ (the latter can be obtained also through regularization).
+Under strong assumptions, theorems about solving learning problems have been proved (see \cite{ML_book}) that express limitations of the learned solution and characterize some properties of learning problems.
+Relevant to this thesis is the fact that one can simplify the learning problem by changing $\mathcal{D}$, $\mathcal{L}$ or $\mathcal{H}$ and increase the obtained performance measured by $\mathcal{M}$. 
 The objective is to reduce the responsibilities of a trained black-box model in the MDE pipeline and leave space for interpretable procedures.
 For achieving this, a simplification of its defining learning problem is necessary.
 
 \vspace{0.5cm}
 
-\pargraph{Hybrid pipeline.}
-For solving MDE
+\paragraph{Hybrid pipeline.}
+The MDE task can be decomposed into the following sub-tasks: (1) estimate depth maps of image patches and (2) merge them into a full prediction.
+This is common in the so-called "tile based" approach.
+An end-to-end neural architecture that frames MDE like this is PatchFusion~\cite{PatchFusion} and was discussed in subsection~\ref{subsec:patchfusion}.
+To the purpose of defining a hybrid pipeline that increases the overall interpretability of the method, non-interpretable components should be confined to one sub-task only.
+Since depth estimation was discussed to need a black-box approach to be solved, the first sub-task will be targeted with a (deep) learning approach.
 
-The developed pipeline can be applied to any input image, but experiments were done on the KITTI dataset \cite{KITTI}.
-Given a tensor image $\mathbf{I}$ of shape $H \times W \times 3$ as input, a criterion is used for sampling patches $\mathbf{P}$.
-All patches must have the same shape $h \times w \times 3$.
-Depth is estimated from each patch through a black-box algorithm and the results are stitched together in the final output depth map.
-For this purpose, patches cannot be too small since depth can be successfully estimated only if global information is provided.
-On the contrary, patches too large make the stitching phase not necessary and the whole pipeline would reduce to a non-interpretable black-box prediction.
-By visually inspecting various crops from KITTI images, I found patches of width and height of 150 to be sufficient for humanly perceiving depth.
-Empirical experiments must be further conducted for assessing this fact from a machine point of view, it is thus left to future works.
+Objective of this section is to simplify the learning problem to be solved in the first sub-task as much as possible.
+In order to achieve this, patches cannot be too small since depth can be successfully estimated only if some global information is provided.
+On the contrary, patches too large make the merging phase not necessary and the whole pipeline would reduce to a non-interpretable black-box prediction.
+It is thus chosen that all patches must have the same shape $h \times w \times 3$, sufficiently smaller than the input image tensor $\mathbf{I}$ of shape $H \times W \times 3$.
+
+Three modifications to the learning problem are proposed: to work with a subset of the possible patches, to pre-process them in the training phase and to change the optimization objective.
+The second sub-task, namely to stitch together the partial depth predictions, is discussed in the next section.
 
 \vspace{0.5cm}
 
-\paragraph{Sampling and Training.}
+\paragraph{Patch sampling strategy.}
 The patch sampling is used in two different ways: for deciding on which patches the model will be trained on and which patches are to be used for inferring the full image depth map. 
 During training, the sampling procedure must ensure enough data diversity for avoiding overfitting, while during inference it should target patches expected to produce reliable predictions.
 A lot of design choices can be made to this extent.
-I experimented with two sampling procedures:
+In this thesis it is experimented with two sampling procedures:
 \begin{itemize}
     \item{
-        \textit{Random strategy}: during training, patches are randomly cropped, while during inference a grid of overlapping patches is deterministically produced.}
+        \textit{Random strategy}: during training, patches are randomly cropped; during inference, a grid of overlapping patches is deterministically produced.}
     \item{
         \textit{Corner strategy}: image corners are detected using a corner response function.
-        During training patches are randomly sampled around corners and during inference only the corners with higher response are considered.
+        During training, patches are randomly sampled around corners and, during inference, only the corners with higher response are considered.
     }
 \end{itemize}
 The sampling procedure is a filter to which data the black-box model is trained on.
@@ -299,18 +305,16 @@ The corner strategy defines a smaller data manifold to train on than the random 
 By making the data manifold smaller, the learning problem is simplified since it is forced to learn fewer relations.
 This holds as long as the smaller manifold is a subset of the bigger manifold being compared to.
 The corner strategy effectively defines a subset of the patches the random strategy samples.
-Even though the black-box model still lacks of interpretability, it is easier to build trust in it since it tackles a simplified version of the original problem.
 
 The corner strategy was inspired by observing how human eyes move when looking at images.
 They continuously change their point of focus and rarely lay on plain regions.
 They rather stop on what in computer vision are called corners and edges.
-In here I choose to work only with edges, a more general sampling strategy is left as future work.
+The decision was to work only with corners and a more general sampling strategy is left as a future work.
 The corners are detected with a classic corner detector from Moravec, but others can be employed \cite{computer_vision}.
 
 \paragraph{Patch pre-processing and Training Loss.}
 Sampled patches are further processed before being fed to the network so to further simplify the learning problem.
-I experimented with two transformations: warping the patch to preserve camera geometry and radially blurring it.
-
+Since patches cropped far from the principal point of the camera present perspective distortion, a warping procedure is applied to eliminate such distortions.
 The warping procedure ensures that each sampled patch is captured by a virtual camera with its principal point in the center of the patch.
 Camera parameters are needed in order to do this.
 The procedure is the following:
@@ -321,15 +325,34 @@ The procedure is the following:
     \item{Crop $\tilde{\mathbf{I}}$ around the principal point.}
 \end{enumerate}
 This procedure can produce patches with out-of-view pixels.
-To mitigate this, in the sampling procedure, strips along the borders are ignored.
+To mitigate this, in the sampling procedure, strips along the full-image borders are ignored.
 Moreover, the warping can produce lower quality images since a bilinear interpolation step is required.
 Instead, for producing the depth map of the patch, the point cloud provided with the image is projected onto the image, coherently with the computed transformation.
 This warping procedure simulates patches captured with identical cameras and imitate human eyes that rotate (as the camera here does for warping) for observing different visual regions.
 
-After having cropped and warped the patch, I experiment with radially blurring it\footnote{It is not a proper radial blur, but it produces a similar visual effect.}.
-The blur effect is given by iteratively applying gaussian blurring to the patch $\mathbf{P} = \mathbf{P}_{0}$, obtaining $\mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$.
-Each blurred patch is center-cropped.
-To the most blurred one $\mathbf{P}_{N}$ no cropping is applied, to $\mathbf{P}_{N-1}$ a center crop slightly smaller than the previous crop is applied, and so forth iteratively.
+Another consideration is that when building the full image depth map, a lot of partial predictions are stitched together.
+Depth estimation on a single patch doesn't need to be perfect if its imperfections can be corrected by the other predictions.
+For this reason, a weighted variant of the scale invariant loss introduced by Eigen~et~al.~\cite{Eigen} is employed.
+The weighting uses a gaussian density function with standard deviation set to $(w + h) / 2$ and weights pixels based on their distance from the middle point of the patch of coordinates $(h/2, \, w/2)$.
+If a pixel $p$ has image coordinates $(i, \, j)$, its weight $w(p)$ is defined as:
+\[
+    w(p) \, = \, w(i, j) \, = \,
+    \text{exp} \Bigl\{
+        \frac{
+            (i \, - \, \frac{h}{2})^{2} \, + \,
+            (j \, - \, \frac{w}{2})^{2}
+        }{
+            h \, + \, w
+        }
+    \Bigr\}
+\]
+Also the metrics from table \ref{t:metrics} are pixel-wise weighted for measuring the performance of the model.
+
+Since the depth prediction is asked to be more precise in the middle of the patch, boundary details could be less relevant for achieving this.
+Thus, a radial blur is applied to each patch.
+The blur effect is given by iteratively applying Gaussian blurring to the original patch $\mathbf{P} = \mathbf{P}_{0}$, obtaining $\mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$.
+Each blurred patch is then center-cropped to different sizes.
+To the most blurred one $\mathbf{P}_{N}$ no cropping is applied, to $\mathbf{P}_{N-1}$ a center crop slightly smaller than the previous is applied, and so forth iteratively.
 The obtained images have various decreasing sizes:
 \[
     w = w_{N} \, > \, w_{N-1} \, > \, \dotsc \, w_{1} \, > w_{0} \, > w_{min}
@@ -338,20 +361,14 @@ The obtained images have various decreasing sizes:
 \]
 Where $w_{min}$ and $h_{min}$ represents the minimum shape of the non-blurred area.
 The radially blurred patch is obtained by concentrically overlapping this patches on top of each other, starting from the most blurred one.
-Radial blur causes some information to be lost.
-A model trained on such blurred images, but asked to perform equally well on the whole image, is likely to see a degradation in its performance because there is less information available as one gets away from the center.
-Only in particular circumstances it would imply an improvement (if the model overfits to details near image boundaries).
-For this reason I employ both the metrics from table \ref{t:metrics} and a modified version of them that weights the contribution of each pixel based on its distance to the center of the patch.
-The weighting uses a gaussian density function with standard deviation heuristically set to $(w + h) / 2$.
-% This ensures that pixel coordinates are also properly scaled in computing the distance from the patch center.
-
-A similar modification was applied to the loss employed during the training phase.
-A radially weighted scale-invariant-loss is used (the unmodified version is from \cite{Eigen}).
-This loss encourages to better-learn depth values around the center of the patch.
-The blurring smooths out the data manifold by reducing the space of patches considered.
+This procedure doesn't apply a proper radial blur, but it produces a similar visual effect.
+The blurring smooths out the data manifold and reduces its dimensionality.
 The informal reason for this is that patches with high-frequency details around the border are mapped to lower-frequency versions, which are less numerous in this finite sampling context.
+The new space of radially blurred patches is not a subset of the initial patch space, since the radial blur is not naturally present in considered images.
+Whether it simplifies the learning problem or not, is discussed in the next chapter.
 
 \section{Depth fusion pipeline}
+\label{sec:depth_fusion}
 After having gathered partial depth predictions of the input image, an algorithm for composing a final unique estimation is needed.
 Here, a theoretical discussion is made and a pipeline is designed.
 Experiments will follow in future works.
