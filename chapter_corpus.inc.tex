@@ -46,7 +46,7 @@ In fact assumptions simplify reality, making it more easily representable in mat
 
 This kind of flaws can be found also in the methods discussed in section~\ref{sec:SIDE and interpretability}.
 
-\vspace{1cm}
+\vspace{0.5cm}
 
 Let's start from the work of You~et~al.~\cite{towards_interpretable}.
 The authors assume that \textit{depth selectivity} of feature channels is a measure of interpretability without explaining why.
@@ -58,7 +58,7 @@ Depth selectivity measures how much some layers of the model work like a BDL, so
 But BDLs are the second-to-last step in depth estimation based on bin methods, where the last is just an aggregation of the bin scores into a depth value.
 Hence, for You et al., an interpretable network that performs depth estimation is just a network that solves the task in early layers, i.e. a smaller network.
 
-\vspace{1cm}
+\vspace{0.5cm}
 
 In "Visualization of Convolutional Neural Networks for Monocular Depth Estimation"~\cite{Hu}, Hu~et~al. are biased in defining their explainability method (in this case a saliency method).
 They repeatedly notice that if the mask $\textbf{M}$ is not properly optimized the result will be "unexpected" or not "useful".
@@ -67,7 +67,7 @@ Hence, the authors are biased in picking up the explanation that satisfy their e
 Notice that their objective is \textit{not} to output a good-looking image, but to investigate the behavior of the model.
 While their visualization method can be useful, it is based on an arbitrary concept of "relevance" for pixels contributing to the prediction.
 
-\vspace{1cm}
+\vspace{0.5cm}
 
 The first work discussed in section~\ref{sec:SIDE and interpretability}, from Dijk~et~al.~\cite{Dijk}, sheds light on various potential biases of models trained on the KITTI dataset.
 It is not meant to \textit{explain} their behavior, but it is informative nonetheless and uses valid methods for investigating models, that is: altering input images and looking for correlations in the resulting depth maps.
@@ -80,9 +80,9 @@ Assume that the shape of the car is present in the predicted depth map.
 When looking at it, it is immediate to say that the model \textit{recognized} the car.
 What does it mean for an algorithm to "recognize an object" in an image?
 Is the shape of a car present in the depth map because the network "recognized the car" or because of something else?
-Natural language describing numerical results can be misleading.
+Natural language describing numerical results can be misleading, unfortunately expressing results in this way is a common practice in the field of XAI.
 
-\vspace{1cm}
+\vspace{0.5cm}
 
 \section{Limits of Interpretability}
 \label{sec:limits of interpretability}
@@ -98,18 +98,22 @@ In order to clarify this point, consider that, when designing an algorithm for s
 Since the natural language is more expressive than mathematical one, it could happen that some concepts cannot be faithfully translated into mathematical representations.
 The transparency of an algorithm (concept introduced in section \ref{sec:deep learning and interpretability}) comes from the human understanding of its passages which are supposed to represent meaningful operations.
 
-Entities and relations are represented in form of data structures.
+Entities and relations are represented in form of data structures and functions.
 Computations and data manipulations can alter the meaning of such representations.
 For instance, if a variable contains a positive real number that represents a distance, storing a negative value in it does not preserve its representation.
 Ideally, in each step of an algorithm it should be possible to interpret what's happening by referring to what variables and functions represent.
 In a neural network this is hardly possible since only its input and its output represent something meaningful to humans and what's in between is left to be learned by the model during training.
 Theoretically, if extensive studies are performed on a specific model with fixed weights, a more in-depth understanding is possible, but it is an expensive process that, to my knowledge, no one has yet accomplished.
-Researchers only have general ideas of what intermediate feature maps represent and don't analyze a single instance of a model, rather the focus is on classes of models defined by a certain architecture.
+Researchers only have general ideas of what intermediate feature maps represent and don't analyze a single instance of a model, rather the focus is on a class of models defined by a certain architecture.
 Deep learning is mainly used in tasks that are difficult to tackle via a formal and interpretable approach.
 
-It can be concluded that tasks involving high-level difficult-to-mathematically-represent requests will always have a certain degree of non interpretability.
+In fact, a task involving high-level human requests or concepts impossible to mathematically represent, requires an algorithm solving it to \textit{not} preserve representations.
+This results in algorithmic steps that do not have a meaning.
+It can be concluded that such tasks will always have a certain degree of non interpretability.
 This has a fundamental consequence on the whole field of XAI: interpretability methods cannot return arbitrarily good explanations for algorithms solving such tasks.
-Most importantly: there is an upper limit to intrinsic interpretability (transparency) of algorithms task-wise dependent.
+Most importantly: there is an upper limit to intrinsic interpretability (transparency) of algorithms dependent on the task they solve.
+
+\vspace{0.5cm}
 
 Not all tasks are affected in the same way by this fact.
 
@@ -132,13 +136,18 @@ Since human knowledge is limited for these tasks (by definition), whether the la
 \section{Interpretability of Depth Estimation}
 \label{sec:interpretability of depth estimation}
 
+\paragraph{Question.}
 Depth estimation could be formally stated as the task of computing for a given image $\mathbf{I}$ its depth map $\mathbf{Z}$.
-Can this problem be mathematically solved?
+Can this problem be mathematically solved so that limitations of the EG do not apply?
+Is depth estimation a human task?
 
-An image is the result of an image formation process which involve photons hitting a camera that measures their wavelength.
+\vspace{0.5cm}
+
+\paragraph{Discussion.}
+An image is the result of an image formation process which involves photons hitting a camera that measures their wavelength.
 Photons coming from different directions contribute to determining the color of a pixel, but there is one direction in particular that contributes more.
 A photon could bounce and be deviated before ending up traveling along such direction.
-Eventually the photon will hit a camera photo-cell and contribute to image formation.
+Eventually the photon will hit a camera photo-cell and participate in image formation.
 The point in space where the photon was last deviated is associated to the pixel corresponding to the photo-cell.
 Ideally, the $Z$ coordinate of such a point is the depth value of that pixel in the desired (metric) depth map.
 
@@ -152,7 +161,7 @@ In this phase, many pixels are perceptually associated to different points in sp
 The \textit{desired} depth map is hence defined by human visual perception that solves semantic ambiguities in the input signal, rather than by a well-defined physical process.
 This implies that depth estimation (in the wild) is neither solvable nor definable using only mathematical language and reasoning.
 
-\vspace{1cm}
+\vspace{0.5cm}
 
 If assumptions about images are made and the problem is formulated in the multi-view setting, it can be approached mathematically for the most part of it.
 In the binocular setting, two images captured from different view-angles are used for estimating geometry of the scene under the form of disparity maps.
@@ -165,132 +174,102 @@ Surfaces in the scene should appear in the same way from different perspectives,
 For instance, a mirror appears differently based on what's reflecting.
 Transparent materials exhibit a similar problem.
 For successfully determining correspondences between the views, occlusion should be minimum and happen as distant from the camera as possible, otherwise it will invalidate a lot of pixels.
-Another relevant factor is high frequency textures which make it impossible to successfully match pixels from different images belonging the that region.
+Another relevant factor is high frequency textures which make it impossible to successfully match pixels from different images belonging the same region in space.
 
-\vspace{1cm}
+\vspace{0.5cm}
 
 Monocular depth estimation (MDE) is by no means solvable using only mathematical reasoning.
 In fact, estimating a depth map from a single image is an ill-posed problem.
-It is not possible to infer geometrical information about which path photon traveled from a single image.
+It is not possible to infer geometrical information about which path photon traveled from a single image, thus scene geometry is to be guessed by observing visual cues.
 Human semantic knowledge (based on binocular viewing experience) solve visual ambiguities and produce a perception of depth.
 
 Is human depth perception relevant in machine depth estimation?
 Ground truth data is acquired using physical sensors or by rendering depth maps in graphical engines, hence it could be argued that humans have nothing to do with the task.
 This would be a fallacy since ground truth data is pre-processed by human experts before resulting in ground truth depth maps.
 Also, ground truth depth maps are usually incomplete (either sparse or with holes in them) and researchers have preferences on how MDE models should perform where the ground truth information is missing.
-Finally, graphical engines are based on how humans organize physical reality and rendering algorithms are optimized to output photorealistic images based on simplified physical processes.
+Finally, graphical engines are based on how humans organize physical reality and rendering algorithms are optimized to output photorealistic (i.e. as close to how humans visually perceive reality as possible) images based on simplified physical processes.
 
-\vspace{1cm}
+\vspace{0.5cm}
 
 While it is difficult for humans to give accurate metric estimates of distances (and hence of depth), relative distance values can be estimated.
 In creating the DIW dataset \cite{DIW}, people were asked to tell which pixel was closer to the camera given another through a crowd-sourcing process.
-More accurate dense relative depth maps could be estimated with software aided image measurements.
-If such measurements are performed in stereo images or frames of a video, metric depth estimation is feasible.
+More accurate \textit{dense} relative depth maps could be estimated with software aided image measurements.
+If such measurements are performed in stereo images or across video frames, metric depth estimation is feasible.
 It is possible also to generate digital versions of real world scenes.
 Artists can 3D model objects and reproduce environments.
 Assisted by software that renders the digital scene and compares it with the reference image it could be possible to perform a precise depth annotation.
 This further supports the claim that depth estimation is not a purely mathematical task and is about imitating human cognition and perception of the world.
 
-\vspace{1cm}
+\vspace{0.5cm}
 
+\paragraph{Conclusion and implications.}
 It can be concluded that \textit{MDE is a human task}.
+This implies that monocular depth estimation methods present an intrinsic upper limit to their interpretability, as argued in the previous section.
+This undermines the possibility of developing a fully interpretable algorithmic MDE.
+A non-interpretable technique \textit{must} be employed by a method that solves such a task.
 
-\vspace{1cm}
+%\section{Evolutionary perspective}
+%Artificial Intelligence (AI) is about producing algorithms that can compete with human intelligence in solving certain tasks.
+%While it outperforms humans in specific tasks (like playing chess), it is not able yet to solve general tasks (e.g. driving a car).
+%Humans cognitive capabilities are the result of billions of years of evolution.
+%AI research is trying to beat the byproducts of evolution.
+%I argue that evolution cannot be beaten and that a different approach is required in AI research.
+%I will base my arguments on a simple model of evolution, found also in the field of evolutionary computing.
+%
+%A species can be modeled as a population of instances of a certain neural architecture.
+%Each individual has its own network initialization and goes through a training phase (youth) and an evaluation phase (mature age).
+%Each generation of individuals create its offspring.
+%Newborn individual can present modification in the architecture topology.
+%Only a percentage of individuals reproduce and the better they perform, the more likely are to reproduce.
+%Parents can teach their offspring.
+%During their lives, individuals gather data from the world and train on them.
+%By educating their children, parents transmit relevant knowledge they acquired.
+%
+%Under this model, evolution is a massive Neural Architecture Search (NAS) performed for millions of years onto the human species.
+%Even with the advent of new technologies, it's unlikely that better solutions than those found by evolution can be found by humans.
+%In a recent paper \cite{udandarao2024zeroshotexponentialdatapretraining} (quoting the authors) it was found that, far from exhibiting "zero-shot" generalization, multimodal models require exponentially more data to achieve linear improvements in downstream "zero-shot" performance, following a sample inefficient log-linear scaling trend.
+%This supports the idea that data will never be enough.
 
-Humans don't perceive the environment neither in terms of pixels, nor through static entities like images are.
-It is difficult to align human depth perception to the formulation of machine depth estimation.
-Another aspect to consider is that in certain contexts humans can estimate distances, while in others they cannot.
-Also: in certain contexts humans can estimate \textit{relative} distance of objects, while in others they cannot.
+\section{Hybrid Approach to Depth Estimation}
 
-This implies that humans cannot annotate whole images with their metric depth map and neither with their relative depth maps.
-The only kind of annotation humans can perform is that of DIW dataset \cite{DIW}, where humans were asked to tell which pixel was closer to the camera given another.
+In section~\ref{sec:interpretability of depth estimation} it was shown that non-interpretable techniques are \textit{necessary} for tackling monocular depth estimation (MDE).
+The "state of the art" methods developed in last years prove that a black-box model is also \textit{sufficient} for solving MDE.
+Though, the theoretical limitations of interpretability discussed in this chapter imply an \textit{upper limit} to understandability, not complete absence of it.
+In order to achieve the maximal degree of interpretability for MDE methods, non-interpretable techniques need to be confined to some sub-tasks so that an interpretable pipeline can be built on top of the solutions to such sub-tasks.
+The objective is to reduce to the minimum the responsibilities of black-box models in the pipeline.
+This would make it easier to build trust in the resulting hybrid method and increase its transparency.
 
-One could argue that given a digital image to a human, some software support and enough time, an \textit{accurate} dense depth map could be annotated.
-For sure, humans are not able to grasp all the content of an image (particularly \textit{depth} content) by looking at it only once.
-More looks are necessary and eyes must explore it also applying some sort of visual reasoning, e.g. visually linking objects to their orthogonal projection on some visible straight line for accurately estimating their depth.
-Finally, as previously discussed in this chapter, there have been observed visual cues associated with depth perception in humans.
-The role of these cues is still to be clarified since neuroscientific studies did not identify yet a global depth perception process that explicitly uses them.
-But when it comes to visually reasoning about an image depth, these cues come handy to computational thinking. 
-Nevertheless, assuming humans have the right utility instruments and are properly trained, it still has to be empirically proven that they are able to perform a meaningful depth estimation as machines do pixel-wise.
+\vspace{0.5cm}
 
-Hence, it can be safely stated that humans can perceive depth but, right now, they cannot perform depth estimation as formulated in computer vision.
-\textit{Depth estimation is not a human task}.
+\paragraph{Learning problem.}
+Given the set $\mathcal{I}$ of images and the set $\mathcal{Z}$ of depth maps, a probability distribution $\mathcal{D}$ is defined on $\mathcal{I} \times \mathcal{Z}$.
+$\mathcal{D}$ specifies which input-output pairs are relevant for the task of MDE.
+$\mathcal{I}$ is defined by the set of tensors valued in $[0, 1]$ and of various shape (assuming MDE is not constrained to a fixed image resolution).
+The majority of these tensors do not define meaningful images.
+Precisely, ignoring noisy oscillations, interesting images (where "interesting" is defined by $\mathcal{D}$) live in a low-dimensional manifold of the space of images $\mathcal{I}$.
+An interesting image is still interesting if some noise is added to it.
+Noise gives some "thickness" to the interesting image manifold, since it can go in any direction of the space as long as it has a negligible magnitude.
+For simplicity, this fact about noise will be ignored throughout the discussion.
 
-Nevertheless, further investigating human ability to reconstruct precise depth maps could yield to new insights in the field of DE.
-For instance, humans are able to do 3D modeling that consists in constructing a geometrical model of some object or character.
-Sculptures are also an example of geometrical models of objects and people.
-These human capabilities are based on "multiple images", in the sense that there is no restriction to which information humans have access to while performing these tasks.
-I conjecture that humans would be able to produce depth maps from single images by giving an initial guess of the depth map of the scene and then iteratively optimizing it by comparing a novel rendered view of the scene with the input image.
-In fact, usually artists base their modeling skills on how good things look rather than some precise rigorous methodology.
-But this needs to be proven.
-This idea could be used for building DE models that do the same, supported by some ancillary pre-trained networks embedding the knowledge about image appearances.
+A loss function $\mathcal{L}$ is defined on image-depth map pairs.
+A learning problem is defined by a (large) \textit{finite} set $S$ of sampled input-output pairs from $\mathcal{D}$ and a loss function $\mathcal{L}$.
+Solving the learning problem means to identify a set of functions $\mathcal{H}$ called "hypothesis space" \cite{ML_book} that realize the mapping $\mathcal{I} \rightarrow \mathcal{Z}$ and pick up a function $f$ that minimizes the expected value of $\mathcal{L}$ over $\mathcal{D}$.
+The exact solution is usually impossible to find or to prove that it was found.
+Heuristics are employed for choosing a good-enough solution $f \in \mathcal{H}$.
+The process of choosing $f$ is called \textit{training} and consists in solving an optimization problem on $S$ that involves a simplified objective and some additional constraints that improve the solution (regularization terms).
+In practice, the loss function used during training does not match the one to be globally minimized (called metric).
+Also, many metrics can be used for assessing the performance of solutions to complex task like MDE.
 
-\vfill
+Theorems have been proved about solving learning problems (see \cite{ML_book}) that express limitations of the learned solution and characterize learning problems in general.
+Relevant to this thesis is the fact that one can simplify the learning problem by changing $\mathcal{D}$, $\mathcal{L}$ or $\mathcal{H}$ (the latter can be obtained also through regularization).
+The objective is to reduce the responsibilities of a trained black-box model in the MDE pipeline and leave space for interpretable procedures.
+For achieving this, a simplification of its defining learning problem is necessary.
 
-\paragraph{The Necessity of Deep Learning in Depth Estimation.}
-A significant aspect of the EG is the fact that it is about the general difference in expressiveness of natural language and mathematical language, thus it is not only about explanations.
-In order to clarify this point, consider that, when designing an algorithm for solving a certain \textit{problem formulated in natural language}, a developer represents the entities relevant to the problem and relations between them into mathematical language.
-Since the natural language is more expressive than mathematical one, it could happen that some concepts cannot be faithfully translated into mathematical representations (as already noted for training objectives of complex learning algorithms and their explanations).
-The intrinsic transparency of an algorithm comes from human interpretability of its passages which are supposed to represent meaningful operations.
-Thus, a task involving high-level difficult-to-mathematically-represent requests will always have a certain degree of non interpretability.
-This has a fundamental consequence on the whole field of XAI: interpretability methods cannot return arbitrarily good explanations for algorithms solving such tasks.
-Equivalently, there is an upper limit to interpretability (hence also to transparency, since necessary to interpretability) for these algorithms.
+\vspace{0.5cm}
 
-Depth estimation (DE) suffers from this same problem.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-DE, as claimed above, is not a human task and is formulated in mathematical language.
-But, even though humans are not able to solve DE, they \textit{implicitly} add constraints to the desired solution.
-These constraints are not explicitly stated and involve the semantic of the scene.
-In certain DE settings, like \textit{binocular} depth estimation (BDE), the problem can still be solved using geometrical reasoning (epipolar geometry \cite{multiview} for BDE\footnote{
-    There are various situations in which BDE is not solvable using only geometric relations \cite{correspondence}.
-    Usually due to reflections, high frequency textures, material transparency and occlusion.
-    Refer to \cite{stereo} for a survey on deep learning based techniques.
-    Notice, however, that deep learning does not substitute the previous techniques for BDE, it rather enhances them.
-    In MDE a complete substitution happened.
-}).
-But, in the case of \textit{monocular} depth estimation (MDE), the problem is ill-posed.
-The solution of an MDE instance must implicitly align with human semantic of the scene that cannot be encoded through mathematical language.
-Hence, MDE is subject to the EG consequences on interpretability.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-This undermines the possibility of actually developing a fully interpretable algorithmic MDE (since there is an upper limit to the interpretability of its algorithms).
-This implies that a non-interpretable technique \textit{must} be used for solving the task.
-So, deep learning, which by now it proved more effective than all other learning techniques, \text{must} be inserted in the depth estimation pipeline.
-Deep learning is necessary.
+\pargraph{Hybrid pipeline.}
+For solving MDE
 
-Notice though that, while deep learning is necessary, it is not said that the entire procedure must be an end-to-end DL model.
-There is room for complementary procedures, possibly interpretable, that support the learned models.
-This is where my personal experimental contribution comes in place.
-
-\section{Evolutionary perspective}
-Artificial Intelligence (AI) is about producing algorithms that can compete with human intelligence in solving certain tasks.
-While it outperforms humans in specific tasks (like playing chess), it is not able yet to solve general tasks (e.g. driving a car).
-Humans cognitive capabilities are the result of billions of years of evolution.
-AI research is trying to beat the byproducts of evolution.
-I argue that evolution cannot be beaten and that a different approach is required in AI research.
-I will base my arguments on a simple model of evolution, found also in the field of evolutionary computing.
-
-A species can be modeled as a population of instances of a certain neural architecture.
-Each individual has its own network initialization and goes through a training phase (youth) and an evaluation phase (mature age).
-Each generation of individuals create its offspring.
-Newborn individual can present modification in the architecture topology.
-Only a percentage of individuals reproduce and the better they perform, the more likely are to reproduce.
-Parents can teach their offspring.
-During their lives, individuals gather data from the world and train on them.
-By educating their children, parents transmit relevant knowledge they acquired.
-
-Under this model, evolution is a massive Neural Architecture Search (NAS) performed for millions of years onto the human species.
-Even with the advent of new technologies, it's unlikely that better solutions than those found by evolution can be found by humans.
-In a recent paper \cite{udandarao2024zeroshotexponentialdatapretraining} (quoting the authors) it was found that, far from exhibiting "zero-shot" generalization, multimodal models require exponentially more data to achieve linear improvements in downstream "zero-shot" performance, following a sample inefficient log-linear scaling trend.
-This supports the idea that data will never be enough.
-
-\section{My approach to Interpretable DE}
-MDE is not a human task and hence humans cannot solve it.
-Nevertheless, they perceive scene depth and reason about it.
-Since an interpretable algorithm is, by definition, an algorithm which passages are human understandable, an interpretable MDE algorithm must be inspired to how humans reason about scene depth.
-As stated before, MDE cannot be solved using a \textit{fully} interpretable procedure (which would also contradict the fact that MDE is not a human task), hence black-box models must be used in the overall pipeline.
-A hybrid single image DE pipeline must be developed.
-
-\subsection{Proposed DE Pipeline}
 The developed pipeline can be applied to any input image, but experiments were done on the KITTI dataset \cite{KITTI}.
 Given a tensor image $\mathbf{I}$ of shape $H \times W \times 3$ as input, a criterion is used for sampling patches $\mathbf{P}$.
 All patches must have the same shape $h \times w \times 3$.
@@ -298,13 +277,13 @@ Depth is estimated from each patch through a black-box algorithm and the results
 For this purpose, patches cannot be too small since depth can be successfully estimated only if global information is provided.
 On the contrary, patches too large make the stitching phase not necessary and the whole pipeline would reduce to a non-interpretable black-box prediction.
 By visually inspecting various crops from KITTI images, I found patches of width and height of 150 to be sufficient for humanly perceiving depth.
-Empirical experiments must be further conducted for assessing this fact from a machin point of view, it is thus left to future works.
+Empirical experiments must be further conducted for assessing this fact from a machine point of view, it is thus left to future works.
 
-\vfill
+\vspace{0.5cm}
 
 \paragraph{Sampling and Training.}
 The patch sampling is used in two different ways: for deciding on which patches the model will be trained on and which patches are to be used for inferring the full image depth map. 
-During training the sampling procedure must ensure enough data diversity which act as a regularization, while during inference it should target patches expected to produce confident predictions.
+During training, the sampling procedure must ensure enough data diversity for avoiding overfitting, while during inference it should target patches expected to produce reliable predictions.
 A lot of design choices can be made to this extent.
 I experimented with two sampling procedures:
 \begin{itemize}
@@ -322,11 +301,10 @@ This holds as long as the smaller manifold is a subset of the bigger manifold be
 The corner strategy effectively defines a subset of the patches the random strategy samples.
 Even though the black-box model still lacks of interpretability, it is easier to build trust in it since it tackles a simplified version of the original problem.
 
-The corner strategy was inspired by observing how the human eyes move when looking at images.
+The corner strategy was inspired by observing how human eyes move when looking at images.
 They continuously change their point of focus and rarely lay on plain regions.
 They rather stop on what in computer vision are called corners and edges.
 In here I choose to work only with edges, a more general sampling strategy is left as future work.
-
 The corners are detected with a classic corner detector from Moravec, but others can be employed \cite{computer_vision}.
 
 \paragraph{Patch pre-processing and Training Loss.}
@@ -342,18 +320,17 @@ The procedure is the following:
     \item{Warp the image using the computed transformation and obtain a new image $\tilde{\mathbf{I}}$.}
     \item{Crop $\tilde{\mathbf{I}}$ around the principal point.}
 \end{enumerate}
-This procedure can produce patches with out-of-view pixels, to mitigate this, in the sampling procedure strips along the borders are ignored.
+This procedure can produce patches with out-of-view pixels.
+To mitigate this, in the sampling procedure, strips along the borders are ignored.
 Moreover, the warping can produce lower quality images since a bilinear interpolation step is required.
 Instead, for producing the depth map of the patch, the point cloud provided with the image is projected onto the image, coherently with the computed transformation.
-I experimented also with simple image crop, with no warping.
 This warping procedure simulates patches captured with identical cameras and imitate human eyes that rotate (as the camera here does for warping) for observing different visual regions.
 
-After having cropped (and optionally warped) the patch, I experiment with radially blurring it\footnote{It is not a proper radial blur, but it produces a similar visual effect.}.
+After having cropped and warped the patch, I experiment with radially blurring it\footnote{It is not a proper radial blur, but it produces a similar visual effect.}.
 The blur effect is given by iteratively applying gaussian blurring to the patch $\mathbf{P} = \mathbf{P}_{0}$, obtaining $\mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$.
 Each blurred patch is center-cropped.
-To the most blurred one $\mathbf{P}_{N}$ no cropping is applied, to $\mathbf{P}_{N-1}$ a center crop slightly smaller than the previous crop is applied.
-And so forth.
-Are obtained images of various decreasing sizes:
+To the most blurred one $\mathbf{P}_{N}$ no cropping is applied, to $\mathbf{P}_{N-1}$ a center crop slightly smaller than the previous crop is applied, and so forth iteratively.
+The obtained images have various decreasing sizes:
 \[
     w = w_{N} \, > \, w_{N-1} \, > \, \dotsc \, w_{1} \, > w_{0} \, > w_{min}
 \]\[
@@ -392,7 +369,7 @@ But, since the model was trained with a loss that put more emphasis on certain a
 
 The following is inspired to how humans analyze images: they explore them with the eyes building "paths" to follow for visual reasoning and, sometimes, retracting their conclusion by exploring the image differently.
 
-\vfill
+\vspace{0.5cm}
 
 Let $\mathbf{I}$ be the input image, $\mathbf{P}_{0}, \mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$ the patches and $\mathbf{D}_{0}, \mathbf{D}_{1}, \mathbf{D}_{2}, \dotsc, \mathbf{D}_{N}$ their estimated depth maps.
 A pixel $p \in \mathbf{P}_{n}$ corresponds to a pixel $\hat{p} \in \mathbf{I}$ and, if some overlap occurs, it corresponds also to a pixel $\hat{p}_{m} \in \mathbf{P}_{m}$.
