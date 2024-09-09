@@ -64,7 +64,7 @@ The following subsections are dedicated to the KITTI and NYUv2 datasets.
 
 \subsection{KITTI}
 Developing autonomous systems that are able to assist humans in everyday tasks is one of the grand challenges in modern computer science \cite{KITTI}.
-The KITTI dataset \cite{KITTI} provides annotated data usable for such purpose.
+The KITTI dataset \cite{KITTI} provides annotated data usable for such purpose (Figure \ref{fig:kitti_example}).
 It consists of annotated images captured by a car mounting various sensors.
 A stereo-rig with two pairs of cameras capture both colored and gray images (the latter with higher resolution).
 A Velodyne (LIDAR) sensor measures depth values producing a point cloud that is projected onto the captured images, obtaining sparse ground truth depth maps.
@@ -72,11 +72,13 @@ Finally, also a GPS/IMU localization unit is used for tracking the car route.
 The overall setup is illustrated in figure \ref{fig:kitti_car}.
 
 \begin{figure}
+	\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
 	\centering
-    \includegraphics[width=0.8\textwidth]{figs/kitti_car}
+    \includegraphics[scale=0.4]{figs/kitti_example_2}
+	\end{adjustwidth}
     \caption{
-        Car setup used for acquiring KITTI data \cite{KITTI}, the image is from their website.
-        \label{fig:kitti_car}
+        Images from KITTI and their ground-truth sparse depth maps.
+        \label{fig:kitti_example}
     }
 \end{figure}
 
@@ -87,22 +89,21 @@ Before each driving session a calibration phase is conducted.
 All calibration information are available in the dataset, this includes also stereo baseline and camera parameters.
 For this reason, the dataset is particularly suitable to self-supervised training that exploit geometrical constraints of cameras.
 All the self-supervised works that will be reviewed in this thesis use this same dataset.
-In figure \ref{fig:kitti_example} there can be found images from KITTI.
 Other than depth maps, various kind of annotations are provided.
 Parts of the dataset have been subsequently annotated for tasks such as object detection, image segmentation, optical flow estimation and others.
 In here, depth data is the focus, but there are works tackling depth estimation by learning multiple tasks at once (e.g. image segmentation and depth estimation).
 These are not treated here, some of them are discussed in \cite{MERTAN2022103441}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TODO: use sparsely annotated depth maps, not completed ones.
 \begin{figure}
 	\centering
-    \includegraphics[scale=0.4]{figs/kitti_example_2}
+    \includegraphics[width=0.8\textwidth]{figs/kitti_car}
     \caption{
-        Images from KITTI and their ground-truth sparse depth maps.
-        \label{fig:kitti_example}
+        Car setup used for acquiring KITTI data \cite{KITTI}, the image is from their website.
+        \label{fig:kitti_car}
     }
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO: use sparsely annotated depth maps, not completed ones.
 
 \begin{figure}
 	\centering
@@ -133,7 +134,9 @@ Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and i
 \begingroup
 \renewcommand{\arraystretch}{2.}
 \begin{table}
-	\begin{tabular}{l|l}
+	\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+	\centering
+	\begin{tabular}{r|c}
 	Mean Absolute Relative Error (MARE) & $\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \frac {\big| \mathbf{Z}^{*}(p) - \mathbf{Z}(p) \big|} {\mathbf{Z}^{*}(p)}$ \\
 	Mean Squared Relative Error (MSRE) & $\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \frac {\left( \mathbf{Z}^{*}(p) - \mathbf{Z}(p) \right)^{2}} {\mathbf{Z}^{*}(p)}$ \\
 	Root Mean Squared Error (RMSE) & $\sqrt{
@@ -147,6 +150,7 @@ Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and i
 		\frac{\mathbf{Z}(p)}{\mathbf{Z}^{*}(p)}
 	) < \text{threshold} \} \big| $\\
 	\end{tabular}
+\end{adjustwidth}
 \caption{
     Frequently used metrics in depth estimation literature.
     Common thresholds for $\delta$ are $1.25$, $1.25^{2}$ and $1.25^{3}$.
@@ -191,7 +195,7 @@ The same authors also observe that higher quantitative performance doesn't neces
 In \cite{monocular2024} it is noted that a specifically designed metric that satisfies the need of the depth estimation task has not been established yet.
 Researchers in this field are still searching for new alternatives.
 
-\vfill
+\vspace{0.5cm}
 
 Benchmarks of many of the treated works are shown in table \ref{t:kitti_benchmarks} and \ref{t:NYUv2_benchmarks}.
 Since the results come from disparate methods that worked in various depth estimation settings, there is not a monotonical temporal increase in performances.
@@ -208,7 +212,7 @@ I won't define it here, refer to \cite{Zoran} in which Zoran et al. firstly intr
 Self-supervised models place in the middle, but, depending on whether the supervision was on stereo data (that implicitly contain metric information) or monocular footage, there are observable differences.
 \cite{Garg}, \cite{MonoDepth}, \cite{MonoDepth2}, \cite{struct2depth}, \cite{vid2depth}, \cite{FeatDepth}, \cite{SfMLearner} train models in a self-supervised manner.
 
-\vfill
+\vspace{0.5cm}
 
 The metrics defined in this section are the ones used by Eigen et al. in \cite{Eigen} for metric depth estimation on KITTI and NYUv2.
 Their work was the first deep learning based approach to depth estimation and has been taken as a reference for a long time.
@@ -222,9 +226,9 @@ Models are trained on a dataset and the evaluation is run on a whole different d
 When doing this, researchers only report a pair of metrics, usually an error metric and an accuracy.
 Fall into this category \cite{MiDas}, \cite{PatchFusion}, \cite{Marigold}, \cite{ZoeDepth}.
 
-Concluding: single image depth estimation is a vast field rapidly evolving and how to measure its improvements evolves with it.
-
 \begin{table}
+	\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+	\centering
 	\begin{tabular}{c|c|c|c|c|c|c|c|c}
 		\emph{Method} & \emph{Year} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
 		\hline
@@ -241,6 +245,7 @@ Concluding: single image depth estimation is a vast field rapidly evolving and h
 		denseViT \cite{denseViT}                   & 2021 & 0.062 &   -   & 2.573 & 0.092 & 0.959 & 0.995 & 0.999 \\
 		AdaBins \cite{AdaBins}                     & 2021 & 0.058 & 0.190 & 2.360 & 0.088 & 0.964 & 0.995 & 0.999 \\
 	\end{tabular}
+\end{adjustwidth}
 	\caption{
 		\textbf{KITTI} benchmarks.
 		\label{t:kitti_benchmarks}
@@ -248,6 +253,8 @@ Concluding: single image depth estimation is a vast field rapidly evolving and h
 \end{table}
 
 \begin{table}
+	\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+	\centering
 	\begin{tabular}{c|c|c|c|c|c|c|c|c}
 	\emph{Method} & \emph{Year} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
 	\hline
@@ -263,6 +270,7 @@ Concluding: single image depth estimation is a vast field rapidly evolving and h
 	LocalBins \cite{LocalBins}                     & 2022 & 0.099 &   -   & 0.357 &   -   & 0.907 & 0.987 & 0.998 \\
 	ZoeDepth \cite{ZoeDepth}                       & 2023 & 0.075 &   -   & 0.270 &   -   & 0.955 & 0.995 & 0.999 \\
 	\end{tabular}
+\end{adjustwidth}
 \caption[Frequently used metrics]{
 	\textbf{NYUv2} benchmarks.
 	\label{t:NYUv2_benchmarks}

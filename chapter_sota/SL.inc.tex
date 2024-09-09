@@ -3,24 +3,24 @@ Depth estimation can be naturally formulated as a regression problem.
 Every pixel $p$ of an image $\mathbf{I}$ has an associated (positive) depth value $z \in \mathbb{R}^{+}$.
 Monocular depth estimation consists in regressing to that depth value pixel-wise.
 The input of the developed method is an image $\mathbf{I}$ and the output a depth map $\mathbf{Z}$.
+Table \ref{table:1} is a summary of treated methods of this section.
 
 \label{sec:regression_methods}
 
-\begin{center}
-	\begin{table}
-		\begin{tabular}{| c | c | c | c | c |}
-			\hline
-			\textbf{Year} & \textbf{Authors} & \textbf{Task} & \textbf{Loss} \\
-			\hline
-			2014 & Eigen et al. \cite{Eigen} & Metric DE & Scale-Invariant \\
-			2015 & Eigen et al. \cite{Eigen2} & Metric DE & Scale-Invariant + reg \\
-			2016 & Laina et al. \cite{Laina} & Metric DE & berHu \\
-			2016 & Chen et al. \cite{DIW} & Relative DE & ranking loss \\
-			\hline
-		\end{tabular}
-		\caption{Summary of treated pure regression methods for depth estimation. \label{table:1}}
-	\end{table}
-\end{center}
+\begin{table}
+	\centering
+	\begin{tabular}{| c | c | c | c | c |}
+		\hline
+		\textbf{Year} & \textbf{Authors} & \textbf{Task} & \textbf{Loss} \\
+		\hline
+		2014 & Eigen et al. \cite{Eigen} & Metric DE & Scale-Invariant \\
+		2015 & Eigen et al. \cite{Eigen2} & Metric DE & Scale-Invariant + reg \\
+		2016 & Laina et al. \cite{Laina} & Metric DE & berHu \\
+		2016 & Chen et al. \cite{DIW} & Relative DE & ranking loss \\
+		\hline
+	\end{tabular}
+	\caption{Summary of treated pure regression methods for depth estimation. \label{table:1}}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                 EIGEN
@@ -141,7 +141,7 @@ This could also explain \cite{Laina} why working in the log-scale was beneficial
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{DIW}
 Chen et al. \cite{DIW} tackle \textit{relative} depth estimation in the wild.
-They both propose a method for training a model to learn relative depth and introduce a new dataset "Depth in the Wild" (\texttt{DIW}) which is discussed in the "Datasets" section.
+They both propose a method for training a model to learn relative depth and introduce a new dataset "Depth in the Wild" (DIW) which is discussed in the "Datasets" section.
 The former is here treated.
 
 First they consider an encoder-decoder architecture with long range skip connections as shown in figure \ref{fig:DIW_architecture}.
@@ -189,13 +189,11 @@ For deciding whether $\mathbf{Z}^{*}(\mathbf{p}^{*}_{1})$ and  $\mathbf{Z}^{*}(\
 		\text{if } |\mathbf{Z}^{*}(\mathbf{p}^{*}_{1}) - \mathbf{Z}^{*}(\mathbf{p}^{*}_{2})| \leq \tau
 \end{align*}
 
-It's very unlikely that two distinct pixels share the same identical depth value, thus the equality definition must be relaxed.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                 ReDWeb
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{ReDWeb}
-Xian et al. \cite{ReDWeb} continue to study the problem of monocular relative depth estimation in the wild in the same way as Chen et al. \cite{DIW} did: they introduce a new dataset "Relative Depth from Web" (\texttt{ReDWeb}) and propose a training methodology.
+Xian et al. \cite{ReDWeb} continue to study the problem of monocular relative depth estimation in the wild in the same way as Chen et al. \cite{DIW} did: they introduce a new dataset "Relative Depth from Web" (ReDWeb) and propose a training methodology.
 The focus of this discussion is on the latter.
 Contrary to \cite{DIW}, here the authors put more emphasis on the design of the architecture they use which is shown in figure \ref{fig:ReDWeb_architecture} below.
 
@@ -221,7 +219,7 @@ The main idea is to process image patches using ViT modules and to re-assemble t
 In this way ViT blocks can be combined with usual techniques as convolutions and transposed convolutions for the decoding phase.
 Ranftl et al. follow the usual U-Net \cite{UNet} scheme building an encoder-decoder architecture with information flowing from shallow layers of the encoder to deeper layers of the decoder.
 The general architecture is represented in \ref{fig:denseViT_architecture}.
-Thanks to the MiDas \cite{MiDas} training scheme and the very large meta-dataset (1.4 M images) \texttt{MIX 6} they introduced, DPT reaches and surpasses "state of the art" methods of the time.
+Thanks to the MiDas \cite{MiDas} training scheme and the very large meta-dataset (1.4 M images) MIX6 they introduced, DPT reaches and surpasses "state of the art" methods of the time.
 Transformers have been known to better scale with dataset size than CNN based architectures do and Ranftl et al. work leverages on this fact \cite{ViT}.
 
 % architecture
@@ -237,7 +235,7 @@ Transformers have been known to better scale with dataset size than CNN based ar
 Instead of regressing continuous depth values, these methods discretize the depth range and work with bins.
 The discretization of depth range can be global and fixed \cite{depth_as_classification, ordinal_regression}, global but dependent on the image \cite{AdaBins}, local and dependent on the single pixel \cite{ZoeDepth}.
 When probabilities (or scores, depending on the interpretation) are assigned to each bin, a depth value is actually computed which can eventually space in the whole range considered.
-Find a summary in \ref{table:2}.
+Find a summary in Table \ref{table:2}.
 
 % summary table
 \begin{center}
@@ -326,7 +324,6 @@ The authors map labels to their respective bin centers by means of the following
 \]\[
 	\mathbf{Z}(i, j) = c_{\mathbf{L}(i, j)}
 \]
-This sums up \cite{depth_as_classification}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %        Ordinal Regression
@@ -477,4 +474,4 @@ Like before, they assign to each bin (pixel-wise) a probability $\mathbf{P}_{b}$
 In this formula bins are ordered since their ordering is not preserved during training depending on how the attractors influence.
 To make sure not to obtain a difficult to interpret multi-modal probability distributions, the authors build $\mathbf{P}$ pixel-wise and across the bins-channel using the binomial distribution.
 Hence, instead of predicting the actual probability values, binomial distribution parameters are computed.
-To make things numerically stable they employ some more trickery I won't report.
+%To make things numerically stable they employ some more trickery I won't report.

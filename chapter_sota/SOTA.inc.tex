@@ -1,11 +1,11 @@
 \section{Miscellaneous}
 \label{sec:miscellaneous}
-In this section three very relevant works for the modern research are treated.
+In this section three relevant works for the state of the art are treated.
 Their contributions can be briefly summed up like this:
 \begin{enumerate}
-	\item{MiDaS makes it possible to train on a lot of heterogeneous data.}
+	\item{MiDaS makes it possible to train on heterogeneous datasets.}
 	\item{PatchFusion allows predicting high-resolution depth maps.}
-	\item{Marigold proves the power of a pre-trained foundation model and synthetic data in this domain.}
+	\item{Marigold proves the effectiveness of pre-trained vision foundation models and synthetic data in this domain.}
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -124,5 +124,4 @@ For getting the final depth estimate the decoder $\mathcal{D}$ from the same VAE
 I'm not giving all the details here, but one thing to know is how a pretrained model that works with RGB images can work with depth maps: depth maps are first affinely trasformed to be in approximately the range $[-1, +1]$ and then are replicated into three channels.
 In this way they are compatible with the Stable Diffusion VAE which outputs a three channel tensor.
 Nevertheless, it is not obvious at all that the VAE alone can reconstruct this kind of image, but Ke et al. experimentally observed that $\mathbf{Z} \approx \mathcal{D}(\mathcal{E}(\mathbf{Z}))$ with a negligible error.
-This is quite surprising to me.
 Another remarkable fact is that Marigold is trained only on synthetic data and generalizes so well to real world data that beats various other methods in almost every unseen test dataset they evaluated the model on.

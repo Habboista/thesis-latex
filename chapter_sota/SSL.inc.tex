@@ -1,34 +1,32 @@
-\newpage
 \section{Self Supervised Methods}
 \label{s:ssl}
 
 
-\begin{center}
-	\begin{table}
-		\begin{tabular}{| c | c | c | c | c |}
-		\hline
-		\textbf{Year} & \textbf{Authors} & \textbf{Training data} \\
-		\hline
-		2016 & Garg et al. \cite{Garg} & rectified stereo\\
-		2017 & Godard et al. \cite{MonoDepth} & rectified stereo\\
-		2017 & Zhou et al. \cite{SfMLearner} & video footage, known instrinsics\\
-		2018 & Casser et al. \cite{struct2depth} & video footage, known instrinsics\\
-		2018 & Mahjourian et al. \cite{vid2depth} & video footage, known instrinsics\\
-		2019 & Godard et al. \cite{MonoDepth2} & video footage, known instrinsics; rectified stereo\\
-		2020 & Shu et al. \cite{FeatDepth} & video footage, known instrinsics\\
-		\hline
-		\end{tabular}
-	\caption{Summary of treated self supervised methods. \label{table:3}}
-	\end{table}
-\end{center}
+\begin{table}
+	\centering
+	\begin{tabular}{| c | c | c | c | c |}
+	\hline
+	\textbf{Year} & \textbf{Authors} & \textbf{Training data} \\
+	\hline
+	2016 & Garg et al. \cite{Garg} & rectified stereo\\
+	2017 & Godard et al. \cite{MonoDepth} & rectified stereo\\
+	2017 & Zhou et al. \cite{SfMLearner} & video footage, known instrinsics\\
+	2018 & Casser et al. \cite{struct2depth} & video footage, known instrinsics\\
+	2018 & Mahjourian et al. \cite{vid2depth} & video footage, known instrinsics\\
+	2019 & Godard et al. \cite{MonoDepth2} & video footage, known instrinsics; rectified stereo\\
+	2020 & Shu et al. \cite{FeatDepth} & video footage, known instrinsics\\
+	\hline
+	\end{tabular}
+\caption{Summary of treated self supervised methods. \label{table:3}}
+\end{table}
 
 There's a line of research tackling monocular depth estimation from a self-supervised learning approach.
-Well studied geometric relations implicitly constrain depth maps of subsequent frames in videos or in stereo pairs making it suitable to define self-supervised losses for training, i.e. not dependent on ground truth depth maps.
+Well studied geometric relations implicitly constrain depth maps acquired from multiple views~\cite{multiview} making it suitable to define self-supervised losses for training, i.e. not dependent on ground truth depth maps.
 The general idea is simple: given a pair of images geometrically related (e.g. subsequent video frames or a stereo pair), predict the disparity map of one of them and use it to reconstruct the other, the quality of the reconstruction is the target of the optimization.
 
-Before delving into the self supervised works, let's review the main concepts of view synthesis from a disparity map.
+Before delving into the self supervised works (Table \ref{table:3}), let's review the main concepts of view synthesis from a disparity map.
 
-Let's consider the pair of images captured by stereo cameras $(\mathbf{I}^{l}, \mathbf{I}^{r})$, respectively captured by a left camera and a right camera, what are their disparity maps $(\mathbf{D}^{l}, \mathbf{D}^{r})$?
+Consider the pair of images captured by stereo cameras $(\mathbf{I}^{l}, \mathbf{I}^{r})$, respectively captured by a left camera and a right camera, what are their disparity maps $(\mathbf{D}^{l}, \mathbf{D}^{r})$?
 
 Consider a pixel $p$ in the left image $\mathbf{I}^{l}$, this corresponds to a position in the scene 3D space.
 This same scene is captured from a different view point by the right camera, the result is the right image $\mathbf{I}^{r}$.
@@ -61,7 +59,7 @@ In fact, in the stereo setting, a disparity map can be converted into a depth ma
 
 Usually stereo-footage from a camera pair is rectified.
 Rectifying stereo images means aligning them in such a way that disparity vectors are always horizontal, hence the 2D disparity vector field reduces to a 1D vector field, i.e. represented by a tensor of shape $H \times W$.
-This is the setting in which every author that uses stereo video footage find itself in.
+This is the setting in which every author that uses stereo video footage finds itself in.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              Garg
@@ -169,7 +167,6 @@ Hence, both of them are needed.
 			\big| \mathbf{D}^{r}(p) + \mathbf{D}^{l}(p + \mathbf{D}^{r}(p)) \big|
 		\right)
 \]
-This ends the treatment of this paper.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              SfMLearner
@@ -261,7 +258,7 @@ The resulting loss looks like this:
 	\big| \hat{t}_{y} - t_{y} \big| +
 	\big| \hat{t}_{z} - t_{z} \big|
 \]
-This sorts out the pose network optimization, for the depth network it is instead optimized:
+For the depth network, it is instead optimized:
 \[
 	\sum_{p_{\mathbf{I}} \, \text{matches} \, p_{\mathbf{J}}} \big| p_{\mathbf{I}} - \mathcal{T} (p_{\mathbf{J}}) \big|
 \]
@@ -271,7 +268,7 @@ This sorts out the pose network optimization, for the depth network it is instea
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{MonoDepth2}
 Quoting Godard et al. from the abstract of \cite{MonoDepth2}: \textit{"We show that a surprisingly simple model, and associated design choices, lead to superior predictions"}.
-In this work they take MonoDepth \cite{MonoDepth} and improve it with clever small tricks without changing the spirit of the method, although adapting it to be trained also on monocular video footage like in \cite{SfMLearner}.
+In this work they take MonoDepth \cite{MonoDepth} and adapt it to be trained also on monocular video footage like in \cite{SfMLearner}.
 In fact, in MonoDepth images were labeled as "left" or "right", in here the general distinction is between "source" and "target".
 
 In their edge-aware smoothness loss, the authors substitute $\mathbf{D}$ with its mean normalized value $\mathbf{D} / \text{mean} \mathbf{D}$ to discourage shrinking of the estimated disparity map.
@@ -317,9 +314,8 @@ They also apply reflection padding to input images to decrease border artifacts,
 %              struct2depth
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{struct2depth}
-What's the next step? To weaken assumptions.
-One very limiting assumption was that video footage scenes were static, i.e. nothing moves.
-In \cite{struct2depth} Casser et al. try to include the motion of the objects into their framework, which they call struct2depth (see figure \ref{fig:struct2depth}).
+One strong assumption made by the previous works was that video footage scenes were static, i.e. nothing moves.
+In \cite{struct2depth} Casser et al. try to model the motion of objects into their framework, which they call struct2depth (see figure \ref{fig:struct2depth}).
 They are not the first to model dynamic scenes for improving depth estimation from subsequent frames, but they are the first that model individual objects movements rather than using 2D or 3D optical flow.
 
 % architecture
@@ -329,9 +325,10 @@ They are not the first to model dynamic scenes for improving depth estimation fr
 	\caption{Casser et al. struct2depth \cite{struct2depth} model. \label{fig:struct2depth}}
 \end{figure}
 
-As always let's first simplify the approach.
-Consider an object which appears in subsequent frames, if images are masked so that only the object is visible, the relative transformation of the camera w.r.t. it can be estimated.
-Thanks to that it might be reconstructed the object appearance in one frame from its appearance in the other.
+For explanatory purposes, a simplified treatment follows.
+Consider an object which appears in subsequent frames.
+If images are masked so that only the object is visible, the relative transformation of the camera w.r.t. it can be estimated.
+Thanks to that, it might be reconstructed the object appearance in one frame from its appearance in the other.
 More precisely, consider $\mathbf{I}_{0}$ and $\mathbf{I}_{1}$ are the two frames and the object masks are $\mathbf{O}_{0}$ and $\mathbf{O}_{1}$ (which can be computed by means of a given instance-aligned segmentation model $f_{segment}$).
 The relative camera transformation $\mathcal{T}$ can be estimated as $f_{pose}(\mathbf{I}_{0} \odot \mathbf{O}_{0}, \, \mathbf{I}_{1} \odot \mathbf{O}_{1})$, with $\odot$ representing pixel-wise multiplication.
 For reconstruction purpose, a depth map is estimated from the first image: $\mathbf{Z}_{0} = f_{depth}(\mathbf{I}_{0})$.
@@ -346,28 +343,24 @@ In this way they separate objects motion from ego-motion and for this purpose th
 For technical details and considerations they follow along Godard et al. and their MonoDepth2 \cite{MonoDepth2}.
 
 One important contribution of Casser et al. work is to include constraints on object sizes in regressing the depth.
-This is very clever and solves a problem encountered in MonoDepth2 which was there tackled using stereo data.
-If I am in a car capturing video footage and in front of me there is a car moving at the same speed, the model will assign to it "infinite" depth, like it were a very far background detail like the sky is.
+This solves a problem encountered in MonoDepth2, tackled using stereo data.
+If a video-camera is mounted on a car traveling at a certain speed and, in front of it there is another car moving at the same speed, the latter will appear not to be moving w.r.t. the camera.
+Training a model on such situations could result in assigning "infinite" depth to the car in the front, treating it like sky.
 For solving this, Casser et al. guess the depth of the objects based on their size (i.e. area) and class (car, tree, person, ...) and constrain also the depth model to have a similar guess.
-
-There are other things that could be added, but I think this is sufficient to grasp the general concept.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              struct2depth
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{FeatDepth}
-Why need I compare images using their appearance and not some higher representation of them?
-No reasons, in fact Shu et al. \cite{FeatDepth} propose to compare reconstructed images based on their feature maps.
-
+Shu et al. \cite{FeatDepth} propose to compare reconstructed images based on their feature maps (Figure \ref{fig:featdepth}).
+They argue that correct depth and pose are sufficient but not necessary for small photometric error.
+The cause of this is texture-less regions which produce low photometric error even with wrong depth and pose estimates.
 % training pipeline
 \begin{figure}
 	\centering
 	\includegraphics[scale=0.3]{figs/featdepth}
 	\caption{Shu et al. FeatDepth \cite{FeatDepth} pipeline. Note that the image is taken from the paper and uses a different notation. \label{fig:featdepth}}
 \end{figure}
-
-They argue that correct depth and pose are sufficient but not necessary for small photometric error.
-The cause of this is texture-less regions which produce low photometric error even with wrong depth and pose estimates.
 The authors' idea is then to use some higher representation of the image encouraging it to be discriminative also where the image is not.
 For achieving this, Shu et al. employ three networks: DepthNet and PoseNet, as in the previous works, and FeatureNet which is an encoder based on ResNet-50 \cite{ResNet}.
 If $\mathbf{F}$ is the deep multi-channel feature map of the image to reconstruct $\mathbf{I}$ and $\mathbf{F}_{rec}$ the one of the reconstructed image $\mathbf{I}_{rec}$, then the following losses are used:
@@ -382,5 +375,5 @@ $\mathcal{L}_{rec}$ is the reconstruction error measured in the feature space.
 $\mathcal{L}_{dis}$ encourages the learned feature maps to have gradients, making also texture-less regions well characterized.
 Lastly, $\mathcal{L}_{cvt}$ is a regularization term favouring the convergence of the method.
 
-The architecture of FeatDepth is improved in GCNDepth \cite{GCNDepth} by other authors.
-They use a Graph Convolutional Network (GCN) for mapping intermediate decoder feature maps to depth maps, managing to reduce the size of their model of 40\% w.r.t. FeatDepth.
+%The architecture of FeatDepth is improved in GCNDepth \cite{GCNDepth} by other authors.
+%They use a Graph Convolutional Network (GCN) for mapping intermediate decoder feature maps to depth maps, managing to reduce the size of their model of 40\% w.r.t. FeatDepth.

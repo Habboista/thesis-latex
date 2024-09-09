@@ -1,8 +1,7 @@
 \section{Classics}
 \label{s:classics}
-Various works that do not entirely rely on learning algorithms, be them deep or statistical, are reviewed.
-The majority of these come from the pre deep learning era.
-The discussion of this section is not strictly about the papers, but about the methodology of the time.
+Works based on handcrafted pipelines are here presented.
+The treatment will also focus on historical aspects of the approaches.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              Hoeim
@@ -36,7 +35,7 @@ Hence, in the case of occlusion, two objects at completely different depths woul
 Hoeim et al. deal with occlusion in \cite{autopopup4}, where they try to model the occlusion cues and build a computational method for occlusion detection.
 The method uses a Conditional Random Field (CRF).
 It was a very used statistical method in computer vision before deep learning, its main drawback is the expensive inference that involves a global optimization step.
-In last years neural CRFs have been proposed also for single image depth estimation, although I will not review them.
+In last years \textit{neural} CRFs have been proposed also for single image depth estimation.
 
 In \cite{autopopup2} and \cite{autopopup5} the problem of the surface orientation prediction is tackled.
 The idea, also found in older works like \cite{VideoCompass}, was to group surface normals into a predefined way.
@@ -59,12 +58,18 @@ All of these works lead to "Closing the Loop in Scene Interpretation" \cite{auto
 %              Saxena
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Saxena et al.}
-Saxena et al. go along the same journey and produce a series of papers \cite{saxena1, saxena2, saxena3, saxena4} which culminates in their master piece "Make3D: Learning 3D Scene Structure from a Single Still Image" \cite{saxena5}.
+Saxena et al. go along the same journey and produce a series of papers \cite{saxena1, saxena2, saxena3, saxena4} which culminates in their comprehensive "Make3D: Learning 3D Scene Structure from a Single Still Image" \cite{saxena5}.
 Their approach is based on Markov Random Field (MRF) models, that is a probabilistic model of the random fields family, as CRFs are.
 Their idea is to over-segment the input image into super-pixels and consider them as small planar surfaces.
 Planes on which super-pixels lay are modeled as 3-vectors and are the variables the MRF model has to optimize.
 For defining a MRF, one has to define potential functions which define some quantity to be minimized.
 In MRFs these potential functions depend on the super-pixel and its neighbours.
+% example
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.4]{figs/saxena}
+	\caption{Saxena et al. example \cite{saxena5}. (a) The original image. (b) Over-segmentation of the image to obtain super-pixels. (c) The 3D model predicted by the algorithm. (d) A textured render of the 3D model. \label{fig:saxena}}
+\end{figure}
 Saxena et al. encode the following property in the MRF model \cite{saxena5}:
 \begin{itemize}
 	\item{\textbf{Image features and depth:} the content of the super-pixel is correlated to its depth;}
@@ -78,13 +83,6 @@ It is a small dataset compared to what's available today, but at the time it was
 
 Completing their work there is a 3D model construction based on the plane parameters inferred by the MRF model.
 The 3D reconstruction is based on a mesh model of the super-pixels, which can also be textured using superpixel information and as shown in figure \ref{fig:saxena}.
-
-% example
-\begin{figure}
-	\centering
-	\includegraphics[scale=0.4]{figs/saxena}
-	\caption{Saxena et al. example \cite{saxena5}. (a) The original image. (b) Over-segmentation of the image to obtain super-pixels. (c) The 3D model predicted by the algorithm. (d) A textured render of the 3D model. \label{fig:saxena}}
-\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              DepthTransfer
@@ -100,7 +98,6 @@ This idea was not invented by them and can also be found in works of Konrad et a
 Karsch et al. main contribution is the depth fusion process of the neighbors.
 In fact, previously given various depth maps to fuse the approach was to apply some averaging function pixel-wise, for instance in \cite{konrad2} the median of the depth values is taken and a post-processing filtering is applied thereafter.
 An illustration of Karsch et al. method is in figure \ref{fig:depthtransfer}
-
 % method
 \begin{figure}
 	\centering
@@ -117,10 +114,9 @@ After the warping is performed, the fusion is performed through a global optimiz
 %              IM2CAD
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{IM2CAD}
-This is the work on which I want to close this chapter.
-It is from Izadinia et al. \cite{IM2CAD} and it is the direct evolution of the work from Lawrence Robert, whose quote starts the chapter.
-Unlike the other papers discussed in this section, this uses deep learning and it is relatively recent (2017).
-Nevertheless, its ideas are rooted in the visionary work of Lawrence Robert P.h.D. thesis, dated 1963.
+This work is from Izadinia et al. \cite{IM2CAD} and it is the direct evolution of the work from Lawrence Robert, whose quote starts the chapter.
+Unlike the other papers discussed in this section, this uses deep learning and is relatively recent (2017).
+Nevertheless, its ideas are rooted in the work of Lawrence Robert P.h.D. thesis, dated 1963.
 Let's start immediately by looking at a representation of their inference pipeline in figure \ref{fig:im2cad}
 
 % method
@@ -412,6 +408,18 @@ Second, given a certain input-output pair $(\mathbf{I}, \, \mathbf{Z}^{*})$ a ma
 Now, to get the response $R_{l, c}^{b}$ of the channel $c$ at depth $l$ with respect to the depth range $b$, the $c$th-channel of the feature map $\mathbf{F}_{l}$ is averaged by weighting it with the computed mask $\mathbf{M}_{b}$.
 Before computing such a weighted average, the $c$th-channel of the feature map $\mathbf{F}_{l}$, of shape $H_{l} \times W_{l}$, is up-sampled to $\mathbf{F}_{l, c}^{\uparrow}$ of shape $H \times W$.
 The response is averaged across the whole dataset to get the final response $R_{l, c}^{b}$.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{figs/selectivity}
+    \caption{
+        Depth selectivity of a trained neural network for depth estimation.
+        Histograms of $R_{l,c}^{b}$ for certain channels (called "units" in the picture) and layers (MFF and D are the names of the layers in the considered architecture) from \cite{towards_interpretable}.
+        Depth was discretized into 64 bins as can be observed from the horizontal axis.
+        Selectivity of each channel-layer pair is also reported.
+        Some channels exhibit depth selectivity (top row), while in others it completely misses (bottom row).
+        \label{fig:selectivity}
+    }
+\end{figure}
 
 Hence, a response is a number. The higher the number and the more probable it is for neurons at channel $c$ at depth $l$ to fire in correspondence of pixels of depth in the $b$th bin.
 A channel is depth selective if it fires only w.r.t. a certain depth bin.
@@ -437,14 +445,11 @@ The mean depth selectivity of a random assignment of depths is 0.3, hence there 
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.6\textwidth]{figs/selectivity}
+    \includegraphics[width=0.8\textwidth]{figs/increased_selectivity}
     \caption{
-        Depth selectivity of a trained neural network for depth estimation.
-        Histograms of $R_{l,c}^{b}$ for certain channels (called "units" in the picture) and layers (MFF and D are the names of the layers in the considered architecture) from \cite{towards_interpretable}.
-        Depth was discretized into 64 bins as can be observed from the horizontal axis.
-        Selectivity of each channel-layer pair is also reported.
-        Some channels exhibit depth selectivity (top row), while in others it completely misses (bottom row).
-        \label{fig:selectivity}
+        The content is analogous to that of the figure \ref{fig:selectivity}, but it refers to a model regularized with the introduced term.
+        The depth selectivity of the considered channel-layer pairs is evident.
+        \label{fig:increased_selectivity}
     }
 \end{figure}
 
@@ -468,13 +473,3 @@ Finally, the regularization term is given by:
 Where $L$ is the set of layers to which apply the regularization.
 After training the network using this additional term, You et al. observe an increase in the depth selectivity of the model both globally, with a mean depth selectivity of 0.83, and also locally.
 Comparing the figure \ref{fig:increased_selectivity}  with \ref{fig:selectivity}, it can be seen how the histogram of responses peaks more, implying a higher depth selectivity for that channel-layer pair.
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figs/increased_selectivity}
-    \caption{
-        The content is analogous to that of the figure \ref{fig:selectivity}, but it refers to a model regularized with the introduced term.
-        The depth selectivity of the considered channel-layer pairs is evident.
-        \label{fig:increased_selectivity}
-    }
-\end{figure}

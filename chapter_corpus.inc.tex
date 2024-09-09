@@ -233,8 +233,8 @@ A non-interpretable technique \textit{must} be employed by a method that solves 
 \section{Hybrid Approach to Depth Estimation}
 \label{sec:hybrid}
 In section~\ref{sec:interpretability of depth estimation} it was shown that non-interpretable techniques are \textit{necessary} for tackling monocular depth estimation (MDE).
-The "state of the art" methods developed in last years prove that a black-box model is also \textit{sufficient} for solving MDE.
-Though, the theoretical limitations of interpretability discussed in this chapter imply an \textit{upper limit} to transparency, not complete absence of it.
+State of the art methods developed in last years prove that a black-box model is also \textit{sufficient} for solving MDE.
+The theoretical limitations of interpretability discussed in this chapter imply an \textit{upper limit} to transparency, not complete absence of it.
 In order to achieve the maximal degree of interpretability for MDE methods, non-interpretable techniques need to be confined to some sub-tasks so that an interpretable pipeline can be built on top of them.
 The objective is to reduce to the minimum the responsibilities of black-box models in the pipeline.
 This would make it easier to build trust in the resulting hybrid method and increase its transparency to the theorized upper limit.
@@ -252,20 +252,23 @@ An interesting image is still interesting if some noise is added to it.
 Noise gives some "thickness" to the interesting image manifold, since it can go in any direction of the space as long as it has a negligible magnitude.
 For simplicity, this fact about noise will be ignored throughout the discussion.
 
-A loss function $\mathcal{L}: \, \mathcal{I} \times \mathcal{Z} \rightarrow \mathbb{R}^{+}$ is defined on image-depth map pairs.
+A loss function $\mathcal{L}: \, \mathcal{Z} \times \mathcal{Z} \rightarrow \mathbb{R}^{+}$ is defined on pairs of depth maps.
 A learning problem is defined by a (large) \textit{finite} set $S$ of sampled input-output pairs from $\mathcal{D}$ and a loss function $\mathcal{L}$.
-To solve the learning problem means to identify a set of functions $\mathcal{H}$ called "hypothesis space" \cite{ML_book} that realize the mapping $\mathcal{I} \rightarrow \mathcal{Z}$ and pick up a function $f \in \mathcal{H}$ that minimizes the expected value of $\mathcal{L}$ over $\mathcal{D}$.
+To solve the learning problem means to identify a set of functions $\mathcal{H}$ called "hypothesis space" \cite{ML_book} that realize the mapping $\mathcal{I} \rightarrow \mathcal{Z}$ and pick up a function $f \in \mathcal{H}$ that minimizes the expected value of $\mathcal{L}$ over $\mathcal{D}$:
+\[
+    \mathop{\text{argmin}}_{f \in \mathcal{H}} \, \mathbb{E}_{(\mathbf{I}, \, \mathbf{Z}) \sim \mathcal{D}} \, \mathcal{L}(f(\mathbf{I}), \, \mathbf{Z})
+\]
 The exact solution is usually impossible to find or to prove that it was found.
 Heuristics are employed for choosing a good-enough solution $f \in \mathcal{H}$.
 The process of choosing $f$ is called \textit{training} and consists in solving an optimization problem on $S$ that involves a simplified objective and some additional constraints that should improve the found solution (regularization terms).
 In practice, the loss function used during training does not match the one to be globally minimized, called "error metric" $\mathcal{M}$ ("accuracy metric" if the problem is framed in terms of maximization).
 In fact, it is common that metrics are non-differentiable, which makes it difficult to directly optimize them in particular when using a deep learning approach. 
 Also, many metrics can be used for assessing the performance of solutions to complex task like MDE.
-This is due to the complexity of the problem that cannot be captured by a single numerical measure.
+This is due to the complexity of the problem that cannot be captured by a single numerical measure, resulting in a multi-objective optimization problem.
 
-Under strong assumptions, theorems about solving learning problems have been proved (see \cite{ML_book}) that express limitations of the learned solution and characterize some properties of learning problems.
-Relevant to this thesis is the fact that one can simplify the learning problem by changing $\mathcal{D}$, $\mathcal{L}$ or $\mathcal{H}$ and increase the obtained performance measured by $\mathcal{M}$. 
-The objective is to reduce the responsibilities of a trained black-box model in the MDE pipeline and leave space for interpretable procedures.
+%Under strong assumptions, theorems about solving learning problems have been proved (see \cite{ML_book}) that express limitations of the learned solution and characterize some properties of learning problems.
+Relevant to this thesis is the fact that one can simplify the learning problem by changing $\mathcal{D}$, $\mathcal{L}$ or $\mathcal{H}$ and, doing so, increase the obtained performance measured by $\mathcal{M}$. 
+The objective is to reduce the responsibilities of a trained black-box model in the MDE pipeline, leaving space for interpretable procedures.
 For achieving this, a simplification of its defining learning problem is necessary.
 
 \vspace{0.5cm}
@@ -273,7 +276,7 @@ For achieving this, a simplification of its defining learning problem is necessa
 \paragraph{Hybrid pipeline.}
 The MDE task can be decomposed into the following sub-tasks: (1) estimate depth maps of image patches and (2) merge them into a full prediction.
 This is common in the so-called "tile based" approach.
-An end-to-end neural architecture that frames MDE like this is PatchFusion~\cite{PatchFusion} and was discussed in subsection~\ref{subsec:patchfusion}.
+%An end-to-end neural architecture that frames MDE like this is PatchFusion~\cite{PatchFusion} and was discussed in subsection~\ref{subsec:patchfusion}.
 To the purpose of defining a hybrid pipeline that increases the overall interpretability of the method, non-interpretable components should be confined to one sub-task only.
 Since depth estimation was discussed to need a black-box approach to be solved, the first sub-task will be targeted with a (deep) learning approach.
 
@@ -318,14 +321,16 @@ Since patches cropped far from the principal point of the camera present perspec
 The warping procedure ensures that each sampled patch is captured by a virtual camera with its principal point in the center of the patch.
 Camera parameters are needed in order to do this.
 \begin{figure}
+    \begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
     \centering
     \includegraphics[scale=0.4]{figs/warping}
+    \end{adjustwidth}
     \caption{
         The image shows the warping procedure applied to a point sampled with the corner strategy.
         Top-left: the image $\mathbf{I}$ from which to extract patches.
         Top-right: detected corners. The orange point is the selected corner. The red point is the principal point.
         Bottom-right: the warped and cropped image $\tilde{\mathbf{I}}$.
-        Bottom-left: the corresponding image regions in the original image.
+        Bottom-left: the corresponding unwarped region in the original image.
         \label{fig:warping}
     }
 \end{figure}
@@ -376,10 +381,12 @@ The radially blurred patch is obtained by concentrically overlapping this patche
 This procedure doesn't apply a proper radial blur, but it produces a similar visual effect.
 An example of patches transformed using the outlined procedure can be found in figure \ref{fig:blur}.
 \begin{figure}
+    \begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
     \centering
     \includegraphics[scale=0.4]{figs/blur}
+    \end{adjustwidth}
     \caption{
-        Examples of radially blurred patches extracted from a single image.
+        Examples of radially blurred patches extracted from an image.
         \label{fig:blur}
     }
 \end{figure}
@@ -391,66 +398,96 @@ Whether it simplifies the learning problem or not, is discussed in the next chap
 \section{Depth fusion pipeline}
 \label{sec:depth_fusion}
 After having gathered partial depth predictions of the input image, an algorithm for composing a final unique estimation is needed.
-Here, a theoretical discussion is made and a pipeline is designed.
-Experiments will follow in future works.
+Here, a theoretical discussion is made on how such a pipeline could be designed.
 
 The depth fusion part must be as interpretable as possible since a black-box model has been employed for the DE part.
-In the section \ref{sec:miscellaneous}, a tile-based method for DE was discussed: PatchFusion \cite{PatchFusion}.
-While extremely powerful, it is an end-to-end non-interpretable deep learning model that estimates depth patch-wise and subsequently merge them.
+%In the section \ref{sec:miscellaneous}, a tile-based method for DE was discussed: PatchFusion \cite{PatchFusion}.
+%While extremely powerful, it is an end-to-end non-interpretable deep learning model that estimates depth patch-wise and subsequently merge them.
 % BoostingDepth \cite{BoostingDepth} instead uses a two-stage method with a pre-trained MiDas \cite{MiDas} model for depth estimation and a UNet architecture for merging, but still the overall algorithm is not interpretable.
 % The older works from Konrad et al. \cite{konrad2} and Karsch et al. \cite{DepthTransfer}, and a very recent work from Rey-Area et al. \cite{360MonoDepth}, use handcrafted pipelines for the depth fusion part.
 % Except for Konrad et al. who take the median of the depth values to be aggregated, the others set up an optimization problem describing desirable properties the resulting full-resolution depth map should satisfy.
-I propose to perform a fine-tuning of the black-box model for merging the estimated patches.
-Explicit formulation of the tuning objectives is needed, but the knowledge of the network is exploited for making the depth adjustments rather than explicitly parametrizing them (as other works instead do \cite{konrad2, DepthTransfer, 360MonoDepth}).
+I propose to perform a fine-tuning of the black-box model at inference time for merging the estimated patches.
+A formulation of the tuning objective is needed, but the knowledge of the network is exploited for making the depth adjustments rather than explicitly parametrizing them (as other works instead do \cite{konrad2, DepthTransfer, 360MonoDepth}).
 One could argue that during inference time there is no ground truth available and hence the tuning would be arbitrary.
-But, since the model was trained with a loss that put more emphasis on certain areas of the model input, this information could be exploited by treating those areas as ground truth.
+But, since the model was trained with a loss that put more emphasis on certain areas of the patches, this information could be exploited by treating those areas as ground truth.
 
-The following is inspired to how humans analyze images: they explore them with the eyes building "paths" to follow for visual reasoning and, sometimes, retracting their conclusion by exploring the image differently.
+The following is inspired by how humans analyze images: they explore them with the eyes building "paths" to follow for visual reasoning and, sometimes, retract their conclusions by exploring the image differently.
 
 \vspace{0.5cm}
 
-Let $\mathbf{I}$ be the input image, $\mathbf{P}_{0}, \mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$ the patches and $\mathbf{D}_{0}, \mathbf{D}_{1}, \mathbf{D}_{2}, \dotsc, \mathbf{D}_{N}$ their estimated depth maps.
-A pixel $p \in \mathbf{P}_{n}$ corresponds to a pixel $\hat{p} \in \mathbf{I}$ and, if some overlap occurs, it corresponds also to a pixel $\hat{p}_{m} \in \mathbf{P}_{m}$.
+Let $\mathbf{I}$ be the input image, $\mathbf{P}_{0}, \mathbf{P}_{1}, \mathbf{P}_{2}, \dotsc, \mathbf{P}_{N}$ the patches and $\mathbf{Z}_{0}, \mathbf{Z}_{1}, \mathbf{Z}_{2}, \dotsc, \mathbf{Z}_{N}$ their estimated depth maps.
+A pixel $p \in \mathbf{P}_{n}$ corresponds to a pixel $\hat{p} \in \mathbf{I}$ and, if some overlap occurs, it corresponds also to a pixel $\hat{p}_{m} \in \mathbf{P}_{m}$ for some $m \neq n$.
 All the patches are projected onto the image $\mathbf{I}$ so that pixel coordinates live in the same space.
 Hence, a same pixel $p \in \mathbf{P}_{n}$ belongs to $\mathbf{I}$ and can also belong to other patches $\mathbf{P}_{m}$.
 The black-box DE model is denoted $f$.
-A copy of $f$ is used and denoted $\hat{f}$, this will undergo a fine-tuning stage.
-Let's call $\hat{\mathbf{D}}_{0}, \hat{\mathbf{D}}_{1}, \hat{\mathbf{D}}_{2}, \dotsc, \hat{\mathbf{D}}_{N}$ its predictions on the considered patches.
+A copy of $f$ is used and denoted $\hat{f}$, this will undergo the fine-tuning stage while $f$ is frozen.
+Let's call $\hat{\mathbf{Z}}_{0}, \hat{\mathbf{Z}}_{1}, \hat{\mathbf{Z}}_{2}, \dotsc, \hat{\mathbf{Z}}_{N}$ its predictions on the considered patches.
 
-By fine-tuning $\hat{f}$ is order to make the partial predictions agree on the overlapping regions is a first approach.
-This fine-tuning happens each time inference is run.
-Hence, $f$ is frozen and preserved.
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.3]{figs/fusion}
+    \caption{
+        A qualitative example of what could look like the depth fusion pipeline.
+        Left: original images from KITTI and their ground truth overlaid.
+        Center: predictions from full-image model.
+        Right: stitching of partial predictions from patch-model.
+        No strategy was developed for dealing with corner-less regions, hence the final result doesn't cover the whole image.
+        Visible artifacts are present because of the way differentiable warping was dealt with.
+        \label{fig:fusion}
+    }
+\end{figure}
+
+To make \textit{all} the partial predictions agree on the overlapping regions is a first approach.
 The following loss could be minimized:
 \[
     \mathcal{L} =
         \sum_{n \neq m} \,
         \sum_{p \in \mathbf{P}_{n} \cap \mathbf{P}_{m}}
         e^{-\mathbf{W}_{n}(p)}
-        (\hat{\mathbf{D}}_{n}(p) - \mathbf{D}_{m}(p))^{2}
+        (\hat{\mathbf{Z}}_{n}(p) - \mathbf{Z}_{m}(p))^{2}
         \, + \,
         \lambda
         \sum_{n}
         \sum_{p \in \mathbf{P}_{n}}
         \mathbf{W}_{n}(p)
-        (\hat{\mathbf{D}}_{n}(p) - \mathbf{D}_{n}(p))^{2}
+        (\hat{\mathbf{Z}}_{n}(p) - \mathbf{Z}_{n}(p))^{2}
 \]
 Where $\mathbf{W}_{n}$ is a weight mask, as used in the weighted scale-invariant loss and the weighted metrics, that fades radially (if warping was applied to the patch, also the mask is warped).
 $\mathbf{W}_{n}(p)$ is a measure of how much the model \textit{should} be confident about the prediction in $p$.
 Pixels with high confidence contribute less to the loss.
 The first term of the loss encourages different depth maps to agree on the overlapping regions, while the second one avoids the network to completely forget its initial prediction and degenerating into a constant solution. 
-$\lambda$ is a hyperparameter.
+As an example, a baseline model was trained on KITTI following \cite{Eigen} and its full-image output was qualitatively compared to a partial depth map obtained with the outlined inference procedure (1 epoch of tuning).
+The model used in the inference procedure was trained patch-wise with the various simplifications discussed in the previous section.
+During inference, patches are treated analogously.
+Figure \ref{fig:fusion} shows the result.
+
+\vspace{0.5cm}
 
 The overlapping between patches need to be monitored since it could create an unbalanced loss.
-For this reason the above loss require further modifications.
+For this reason, further modifications are required.
 Instead of optimizing all patches together, it could be established an ordering.
 Also, the model will perform differently on different patches and so not all patches should be treated equally.
 A procedure similar to the one used for variable selection in statistics could be employed.
 Hence, the optimization would involve an initial small set of patches to which the other ones are iteratively added and optimized, without necessarily using all of them (forward selection).
 Or, some could be iteratively removed from the whole set (backward selection).
 
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.3]{figs/fusion_boxes}
+    \caption{
+        Top-left: the first patch is chosen and depth is predicted (transparent green).
+        Top-right: candidates for the next patch are evaluated, the green box is chosen.
+        The solid green rectangle indicates the overlapping region.
+        Bottom-right: the process is iterated.
+        Bottom-left: it is shown the whole region involved in the prediction up to this iteration.
+        \label{fig:fusion_boxes}
+    }
+\end{figure}
+
+
 Assume there is a strategy for choosing one or more initial patches in which the model is more confident, i.e. some error measure w.r.t. ground truth is \textit{probably} lower.
 For instance, in \cite{BoostingDepth} it is observed that depth estimation models better perform on regions with a precise \textit{edge} density that depends on the dataset the model was trained on.
-A simple criteria could be to firstly select the patch with edge density closest to the reference value.
+A simple criterion could be to first select the patch with edge density closest to the reference value.
 Let's call $n_{0}$ its index.
 Consider now another patch $\mathbf{P}_{n_{1}}$.
 If it overlaps with $\mathbf{P}_{n_{0}}$ a comparison can be made and might be used for establishing whether to include it in the optimization process or not.
@@ -459,6 +496,7 @@ This is due to the radial weighting applied during training and to a general tra
 For building a coherent depth map, the second patch must present a compromise between fully overlapping and not overlapping, but it should agree as much as possible with the initial patch.
 After the patch is selected it is merged with the previous one, creating a new patch.
 If a criterion that fulfills these requirements is defined, it could be used to iteratively add and optimize patches until a condition is met.
+A schematic illustration of this iterative inference procedure is found in Figure \ref{fig:fusion_boxes}.
 
 It could happen that some non-optimal choice has been taken during the process.
 In this case, a backtracking procedure should be considered for producing an alternative merge.
