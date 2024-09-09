@@ -1,23 +1,17 @@
 \chapter*{Abstract}
 
-This thesis is about single image depth estimation (SIDE), a subfield of computer vision, and interpretability of deep learning methods.
+This thesis investigates single image depth estimation (SIDE), an important computer vision task with critical applications in autonomous driving and robotics, and explores its interpretability.
+SIDE tackles the challenge of reconstructing the geometric structure of a scene from a single image by assigning a depth value to each pixel, corresponding to the depth of the object represented by that pixel within the camera's coordinate system.
+Specifically, SIDE can be decomposed into two primary sub-tasks: (1) estimating depth maps for image patches and (2) merging these depth maps to produce a comprehensive depth prediction.
 
-SIDE deals with the problem of reconstructing the geometry of a scene from a single image of it.
-As of today, this is done by assigning to each image pixel a depth value corresponding to the depth of the object that forms that pixel in the camera coordinate system.
+A significant challenge with deep learning models is their nature as black boxes, which means they lack transparency and are not easily interpretable by humans.
+Currently, all state-of-the-art approaches in SIDE exhibit this black-box characteristic.
+It is argued that there are inherent limitations to the interpretability of algorithms for tasks like SIDE, which necessitates the use of black-box components to achieve effective solutions.
+These limitations arise from the inability of current methods to fully capture the complexity of human cognition.
 
-Deep learning models are known to be black-boxes, meaning that they are not understandable (\textit{interpretable}) by humans.
-All "state of the art" approaches in SIDE are black-boxes.
-
-This work has two objectives: to theoretically investigate interpretability of algorithms and to propose a methodology for achieving it in SIDE.
-
-It is argued that there are upper limits to interpretability of algorithms solving certain tasks like SIDE, implying that a black-box component \textit{must} be employed in order to solve them.
-The motivations for this are to be found in the incapacity of formal language to capture the complexity of human cognition.
-
-For achieving more interpretable methods, deep learning has to be confined to sub-tasks.
-SIDE is known to be decomposable into the following sub-tasks: (1) estimate depth maps of image patches and (2) merge them into a full prediction.
-Performed experiments explore alternative ways of defining the first sub-task in order to simplify it from a statistical learning perspective.
-This simplification requires an appropriate merging procedure that is responsible for completing the full depth map.
-Finally, an interpretable depth fusion procedure is designed.
+To develop more interpretable methods, this thesis also explores alternative approaches to defining the first sub-task, aiming to simplify it from a statistical learning perspective.
+This simplification requires an effective merging procedure to complete the depth map.
+Ultimately, a novel interpretable depth fusion procedure is proposed to address these challenges.
 
 \thispagestyle{empty}
 \mbox{}
