@@ -74,9 +74,9 @@ The overall setup is illustrated in figure \ref{fig:kitti_car}.
 \begin{figure}
 	\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
 	\centering
-    \includegraphics[scale=0.4]{figs/kitti_example_2}
+    \includegraphics[width=\textwidth]{figs/kitti_example_2}
 	\end{adjustwidth}
-    \caption{
+    \caption[Examples from the KITTI dataset.]{
         Images from KITTI and their ground-truth sparse depth maps.
         \label{fig:kitti_example}
     }
@@ -97,7 +97,7 @@ These are not treated here, some of them are discussed in \cite{MERTAN2022103441
 \begin{figure}
 	\centering
     \includegraphics[width=0.8\textwidth]{figs/kitti_car}
-    \caption{
+    \caption[Car setup used for collecting KITTI data.]{
         Car setup used for acquiring KITTI data \cite{KITTI}, the image is from their website.
         \label{fig:kitti_car}
     }
@@ -107,8 +107,8 @@ These are not treated here, some of them are discussed in \cite{MERTAN2022103441
 
 \begin{figure}
 	\centering
-    \includegraphics[width=0.8\textwidth]{figs/nyuv2_example}
-    \caption{
+    \includegraphics[width=\textwidth]{figs/nyuv2_example}
+    \caption[Examples from NYUv2 dataset.]{
         Image and its annotations from NYUv2 paper \cite{NYUv2}.
         \label{fig:nyuv2_example}
     }
@@ -134,24 +134,26 @@ Given the predicted depth map $\mathbf{Z}_{pred}$ of the model to evaluate and i
 \begingroup
 \renewcommand{\arraystretch}{2.}
 \begin{table}
-	\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+	%\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
 	\centering
-	\begin{tabular}{r|c}
+	\resizebox{\textwidth}{!}{
+	\begin{tabular}{r|l}
 	Mean Absolute Relative Error (MARE) & $\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \frac {\big| \mathbf{Z}^{*}(p) - \mathbf{Z}(p) \big|} {\mathbf{Z}^{*}(p)}$ \\
 	Mean Squared Relative Error (MSRE) & $\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \frac {\left( \mathbf{Z}^{*}(p) - \mathbf{Z}(p) \right)^{2}} {\mathbf{Z}^{*}(p)}$ \\
 	Root Mean Squared Error (RMSE) & $\sqrt{
 		\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \left( \mathbf{Z}^{*}(p) - \mathbf{Z}(p) \right)^{2}
 	}$ \\
-	Root Mean Squared Logarithmic Error (RMSEL) & $\sqrt{
+	Root Mean Squared Log Error (RMSEL) & $\sqrt{
 		\frac{1}{\big| \mathbf{Z}^{*} \big|}\sum_{p \in \mathbf{Z}^{*}} \left( log \, \mathbf{Z}^{*}(p) - log \, \mathbf{Z}(p) \right)^{2}
 	}$ \\
-	Accuracy with respect to a threshold ($\delta$) & $\frac{1}{\big| \mathbf{Z}^{*} \big|} \, \big| \{p \in \mathbf{Z}^{*} \, | \, \text{max}(
+	Accuracy with respect to a threshold ($\delta$) & $\frac{1}{\big| \mathbf{Z}^{*} \big|} \, \big| \{p \in \mathbf{Z}^{*} \, | \, \text{max}\{
 		\frac{\mathbf{Z}^{*}(p)}{\mathbf{Z}(p)},
 		\frac{\mathbf{Z}(p)}{\mathbf{Z}^{*}(p)}
-	) < \text{threshold} \} \big| $\\
+	\} < \text{threshold} \} \big| $\\
 	\end{tabular}
-\end{adjustwidth}
-\caption{
+	}
+%\end{adjustwidth}
+\caption[Metrics and their definitions.]{
     Frequently used metrics in depth estimation literature.
     Common thresholds for $\delta$ are $1.25$, $1.25^{2}$ and $1.25^{3}$.
     \label{t:metrics}}
@@ -180,6 +182,35 @@ Their \textit{Scale-Invariant Error} is invariant to scale in the sense that, by
 			( log \, \mathbf{Z}^{*}(p) - log \, \mathbf{Z}^{*}(q))
 		)^{2}
 \]
+
+\begin{table}
+	%\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+	\centering
+	\resizebox{\textwidth}{!}{
+	\begin{tabular}{l|l|l|l|l|l|l|l|l}
+		\emph{Method} & \emph{Year} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
+		\hline
+		Eigen et al. \cite{Eigen}                  & 2014 & 0.190 & 1.515 & 7.156 & 0.270 & 0.692 & 0.899 & 0.967 \\
+		Garg et al. \cite{Garg}                    & 2016 & 0.169 & 1.080 & 5.104 & 0.273 & 0.740 & 0.904 & 0.962 \\
+		MonoDepth \cite{MonoDepth}                 & 2017 & 0.097 & 0.896 & 5.093 & 0.176 & 0.879 & 0.962 & 0.986 \\
+		SfMLearner \cite{SfMLearner}               & 2017 & 0.208 & 1.768 & 6.856 & 0.283 & 0.678 & 0.885 & 0.957 \\
+		Cao et al. \cite{depth_as_classification}  & 2017 & 0.153 &   -   & 5.290 &   -   & 0.814 & 0.939 & 0.976 \\
+		Fu et al. \cite{ordinal_regression}        & 2018 & 0.072 & 0.307 & 2.727 & 0.120 & 0.932 & 0.984 & 0.994 \\
+		MonoDepth2 \cite{MonoDepth2}               & 2018 & 0.106 & 0.806 & 4.630 & 0.193 & 0.876 & 0.958 & 0.980 \\
+		struct2depth \cite{struct2depth}           & 2018 & 0.108 & 0.825 & 4.750 & 0.186 & 0.873 & 0.957 & 0.982 \\
+		vid2depth \cite{vid2depth}                 & 2018 & 0.151 & 0.949 & 4.383 & 0.227 & 0.802 & 0.935 & 0.974 \\
+		FeatDepth \cite{FeatDepth}                 & 2020 & 0.099 & 0.697 & 4.427 & 0.184 & 0.889 & 0.963 & 0.982 \\
+		denseViT \cite{denseViT}                   & 2021 & 0.062 &   -   & 2.573 & 0.092 & 0.959 & 0.995 & 0.999 \\
+		AdaBins \cite{AdaBins}                     & 2021 & 0.058 & 0.190 & 2.360 & 0.088 & 0.964 & 0.995 & 0.999 \\
+	\end{tabular}
+}
+%\end{adjustwidth}
+	\caption[KITTI benchmarks.]{
+		\textbf{KITTI} benchmarks.
+		\label{t:kitti_benchmarks}
+	}
+\end{table}
+
 In \cite{SfMLearner} Zhou et al. scale each prediction $\mathbf{Z}$ of their model by $\frac{\text{median}(\mathbf{Z}^{*})}{\text{median}(\mathbf{Z})}$, so to obtain an evaluation independent of scale also for the other metrics.
 Godard et al. also follow this approach in \cite{MonoDepth2}, but they make the scaling factor equal across all images by taking the mean of all the median scales both for predictions and ground truth observations:
 \[
@@ -201,6 +232,33 @@ Benchmarks of many of the treated works are shown in table \ref{t:kitti_benchmar
 Since the results come from disparate methods that worked in various depth estimation settings, there is not a monotonical temporal increase in performances.
 Supervised \textit{metric} depth estimation works exhibit better performance indicator.
 These are: \cite{Eigen}, \cite{Eigen2}, \cite{depth_as_classification}, \cite{ordinal_regression}, \cite{denseViT}, \cite{AdaBins}, \cite{Laina}, \cite{LocalBins}, \cite{ZoeDepth}.
+
+\begin{table}
+	%\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+	\centering
+	\resizebox{\textwidth}{!}{
+	\begin{tabular}{c|c|c|c|c|c|c|c|c}
+	\emph{Method} & \emph{Year} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
+	\hline
+	Eigen et al. \cite{Eigen}                      & 2014 & 0.215 & 0.212 & 0.907 & 0.285 & 0.611 & 0.887 & 0.971 \\
+	Eigen et al. \cite{Eigen2}                     & 2015 & 0.158 & 0.121 & 0.641 & 0.214 & 0.769 & 0.950 & 0.988 \\
+	Laina et al. \cite{Laina}                      & 2016 & 0.127 &   -   & 0.573 & 0.195 & 0.811 & 0.953 & 0.988 \\
+	DIW \cite{DIW}                                 & 2016 & 0.360 & 0.460 & 1.130 & 0.390 &   -   &   -   &   -   \\
+	Cao et al.   \cite{depth_as_classification}    & 2017 & 0.192 &   -   & 0.688 &   -   & 0.722 & 0.926 & 0.980 \\
+	ReDWeb \cite{ReDWeb}                           & 2018 & 0.340 & 0.410 & 1.090 & 0.370 & 0.781 & 0.950 & 0.987 \\
+	Fu et al. \cite{ordinal_regression}            & 2018 & 0.115 &   -   & 0.509 &   -   & 0.828 & 0.965 & 0.992 \\
+	denseViT \cite{denseViT}                       & 2021 & 0.110 &   -   & 0.357 &   -   & 0.904 & 0.988 & 0.998 \\
+	AdaBins \cite{AdaBins}                         & 2021 & 0.103 &   -   & 0.364 &   -   & 0.903 & 0.984 & 0.997 \\
+	LocalBins \cite{LocalBins}                     & 2022 & 0.099 &   -   & 0.357 &   -   & 0.907 & 0.987 & 0.998 \\
+	ZoeDepth \cite{ZoeDepth}                       & 2023 & 0.075 &   -   & 0.270 &   -   & 0.955 & 0.995 & 0.999 \\
+	\end{tabular}
+	}
+%\end{adjustwidth}
+	\caption[NYUv2 benchmarks.]{
+		\textbf{NYUv2} benchmarks.
+		\label{t:NYUv2_benchmarks}
+	}
+\end{table}
 
 The worst performing models are the ones that come from \cite{DIW} and \cite{ReDWeb}.
 In fact, they are \textit{relative} depth estimation models and these metrics are used to measure metric depth values.
@@ -225,54 +283,3 @@ While the used metrics didn't change, the evaluation procedure did.
 Models are trained on a dataset and the evaluation is run on a whole different dataset.
 When doing this, researchers only report a pair of metrics, usually an error metric and an accuracy.
 Fall into this category \cite{MiDas}, \cite{PatchFusion}, \cite{Marigold}, \cite{ZoeDepth}.
-
-\begin{table}
-	\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
-	\centering
-	\begin{tabular}{c|c|c|c|c|c|c|c|c}
-		\emph{Method} & \emph{Year} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
-		\hline
-		Eigen et al. \cite{Eigen}                  & 2014 & 0.190 & 1.515 & 7.156 & 0.270 & 0.692 & 0.899 & 0.967 \\
-		Garg et al. \cite{Garg}                    & 2016 & 0.169 & 1.080 & 5.104 & 0.273 & 0.740 & 0.904 & 0.962 \\
-		MonoDepth \cite{MonoDepth}                 & 2017 & 0.097 & 0.896 & 5.093 & 0.176 & 0.879 & 0.962 & 0.986 \\
-		SfMLearner \cite{SfMLearner}               & 2017 & 0.208 & 1.768 & 6.856 & 0.283 & 0.678 & 0.885 & 0.957 \\
-		Cao et al. \cite{depth_as_classification}  & 2017 & 0.153 &   -   & 5.290 &   -   & 0.814 & 0.939 & 0.976 \\
-		Fu et al. \cite{ordinal_regression}        & 2018 & 0.072 & 0.307 & 2.727 & 0.120 & 0.932 & 0.984 & 0.994 \\
-		MonoDepth2 \cite{MonoDepth2}               & 2018 & 0.106 & 0.806 & 4.630 & 0.193 & 0.876 & 0.958 & 0.980 \\
-		struct2depth \cite{struct2depth}           & 2018 & 0.108 & 0.825 & 4.750 & 0.186 & 0.873 & 0.957 & 0.982 \\
-		vid2depth \cite{vid2depth}                 & 2018 & 0.151 & 0.949 & 4.383 & 0.227 & 0.802 & 0.935 & 0.974 \\
-		FeatDepth \cite{FeatDepth}                 & 2020 & 0.099 & 0.697 & 4.427 & 0.184 & 0.889 & 0.963 & 0.982 \\
-		denseViT \cite{denseViT}                   & 2021 & 0.062 &   -   & 2.573 & 0.092 & 0.959 & 0.995 & 0.999 \\
-		AdaBins \cite{AdaBins}                     & 2021 & 0.058 & 0.190 & 2.360 & 0.088 & 0.964 & 0.995 & 0.999 \\
-	\end{tabular}
-\end{adjustwidth}
-	\caption{
-		\textbf{KITTI} benchmarks.
-		\label{t:kitti_benchmarks}
-	}
-\end{table}
-
-\begin{table}
-	\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
-	\centering
-	\begin{tabular}{c|c|c|c|c|c|c|c|c}
-	\emph{Method} & \emph{Year} & \emph{MARE} & \emph{MSRE} & \emph{RMSE} & \emph{RMSEL} & \emph{$\delta \, 1.25$} & \emph{$\delta \, 1.25^{2}$} & \emph{$\delta \, 1.25^{3}$} \\
-	\hline
-	Eigen et al. \cite{Eigen}                      & 2014 & 0.215 & 0.212 & 0.907 & 0.285 & 0.611 & 0.887 & 0.971 \\
-	Eigen et al. \cite{Eigen2}                     & 2015 & 0.158 & 0.121 & 0.641 & 0.214 & 0.769 & 0.950 & 0.988 \\
-	Laina et al. \cite{Laina}                      & 2016 & 0.127 &   -   & 0.573 & 0.195 & 0.811 & 0.953 & 0.988 \\
-	DIW \cite{DIW}                                 & 2016 & 0.360 & 0.460 & 1.130 & 0.390 &   -   &   -   &   -   \\
-	Cao et al.   \cite{depth_as_classification}    & 2017 & 0.192 &   -   & 0.688 &   -   & 0.722 & 0.926 & 0.980 \\
-	ReDWeb \cite{ReDWeb}                           & 2018 & 0.340 & 0.410 & 1.090 & 0.370 & 0.781 & 0.950 & 0.987 \\
-	Fu et al. \cite{ordinal_regression}            & 2018 & 0.115 &   -   & 0.509 &   -   & 0.828 & 0.965 & 0.992 \\
-	denseViT \cite{denseViT}                       & 2021 & 0.110 &   -   & 0.357 &   -   & 0.904 & 0.988 & 0.998 \\
-	AdaBins \cite{AdaBins}                         & 2021 & 0.103 &   -   & 0.364 &   -   & 0.903 & 0.984 & 0.997 \\
-	LocalBins \cite{LocalBins}                     & 2022 & 0.099 &   -   & 0.357 &   -   & 0.907 & 0.987 & 0.998 \\
-	ZoeDepth \cite{ZoeDepth}                       & 2023 & 0.075 &   -   & 0.270 &   -   & 0.955 & 0.995 & 0.999 \\
-	\end{tabular}
-\end{adjustwidth}
-\caption[Frequently used metrics]{
-	\textbf{NYUv2} benchmarks.
-	\label{t:NYUv2_benchmarks}
-}
-\end{table}

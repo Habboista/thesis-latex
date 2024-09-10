@@ -34,29 +34,23 @@ Simplifying the learning problem the black-box model has to solve, transfers par
 
 Experiments reported in chapter~\ref{ch:results} prove that the proposed network better learn on the simplified problem if only two out of the three proposed simplifications are applied.
 These two are: using only interesting patches for prediction and geometrically correcting camera distortions.
+The relative improvements w.r.t. the plain setting and measured in the weighted $\delta \, 1.25$, $\delta \, 1.25^{2}$ and $\delta \, 1.25^{3}$ is of 10\%, 6\% and 4\% respectively.
 The third one, radial blurring the patches, proved to worsen model performances, this is likely due to architecture structure.
 
 Although not tested, in section~\ref{sec:depth_fusion} a merging pipeline, complementary to the proposed alternative learning problem, was designed and discussed.
 
 \section{Future Work}
-It is left to future works the testing and tuning of the designed depth fusion pipeline and the exploration of alternative designs.
-
-The performed experiments used an old model from \cite{Eigen}, modern architectures have to be tried in order to validate obtained results.
-Also, the effect of radially blurring the patches could be beneficial for other models and needs further testing.
-
-Only one dataset was used in this thesis, experiments with more dataset through the MiDas \cite{MiDas} training procedure are to be conducted.
-In particular, synthetic datasets could be exploited for the dense depth maps that would be beneficial for a patch-wise prediction task.
-Also, the availability of camera parameters is fundamental for the warping procedure and, it has to be investigated whether they could be dropped in alternative problem formulations.
-
-Images and depth maps could be projected onto a sphere centered in the camera, this would eliminate the need of geometrically correcting patches during sampling.
-Also, experimenting with \textit{distance} maps will be studied in future works.
-
-Finally, can the interpretability of an algorithm be quantified?
-Can the theoretical results of this thesis be assessed experimentally?
-Can this approach for developing more interpretable MDE methods, compete with state of the art models?
-
-Open questions for future research.
-
-\vfill
-
-Thank you.
+Finally, open research challenges remain to address.
+Extending the depth fusion pipeline to relative or affine predictions could enable inference with models trained on heterogeneous datasets. 
+Also, experimenting with other architectures and datasets could unlock new problem simplifications that further improve performance.
+Eventually, the use of synthetic datasets could be a key element for future developments for the dense depth maps they provide, allowing more precise predictions at higher resolutions.
+Concluding, developing a framework for quantifying transparency of AI methods may be used for producing experimental evidence of the proved theoretical limitations.
+%It is left to future works the testing and tuning of the designed depth fusion pipeline and the exploration of alternative designs.
+%The performed experiments used an old model from \cite{Eigen}, modern architectures have to be tried in order to further validate obtained results
+%Also, the effect of radially blurring the patches could prove to be beneficial if different architectures are utilized, as discussed in section \ref{sec:experiments}.
+%
+%Experiments with more datasets can to be conducted to assess the generality of the proposed problem simplification approach in other domains.
+%In particular, synthetic datasets could be exploited for the dense depth maps they provide, allowing more precise predictions at higher resolutions.
+%The availability of camera parameters is fundamental for the warping procedure and, it has to be investigated whether they could be dropped in alternative problem formulations.
+%Images and depth maps could be projected onto a sphere centered in the camera, this would eliminate the need of geometrically correcting patches during sampling.
+%Also, experimenting with \textit{distance} maps will be studied in future works.

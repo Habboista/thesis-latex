@@ -285,10 +285,21 @@ In order to achieve this, patches cannot be too small since depth can be success
 On the contrary, patches too large make the merging phase not necessary and the whole pipeline would reduce to a non-interpretable black-box prediction.
 It is thus chosen that all patches must have the same shape $h \times w \times 3$, sufficiently smaller than the input image tensor $\mathbf{I}$ of shape $H \times W \times 3$.
 
-Three modifications to the learning problem are proposed: to work with a subset of the possible patches, to pre-process them in the training phase and to change the optimization objective.
+Three modifications to the learning problem are proposed (Figure \ref{fig:simplification}): to work with a subset of the possible patches, to pre-process them in the training phase and to change the optimization objective.
 The second sub-task, namely to stitch together the partial depth predictions, is discussed in the next section.
 
 \vspace{0.5cm}
+
+\begin{figure}
+    \begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+    \centering
+    \includegraphics[scale=0.3]{figs/simplification}
+    \end{adjustwidth}
+    \caption{
+        Illustrative example of the introduced simplifications for patch-wise depth estimation.
+        \label{fig:simplification}
+    }
+\end{figure}
 
 \paragraph{Patch sampling strategy.}
 The patch sampling is used in two different ways: for deciding on which patches the model will be trained on and which patches are to be used for inferring the full image depth map. 
@@ -321,10 +332,10 @@ Since patches cropped far from the principal point of the camera present perspec
 The warping procedure ensures that each sampled patch is captured by a virtual camera with its principal point in the center of the patch.
 Camera parameters are needed in order to do this.
 \begin{figure}
-    \begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+    %\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
     \centering
-    \includegraphics[scale=0.4]{figs/warping}
-    \end{adjustwidth}
+    \includegraphics[width=\textwidth]{figs/warping}
+    %\end{adjustwidth}
     \caption{
         The image shows the warping procedure applied to a point sampled with the corner strategy.
         Top-left: the image $\mathbf{I}$ from which to extract patches.
@@ -381,10 +392,10 @@ The radially blurred patch is obtained by concentrically overlapping this patche
 This procedure doesn't apply a proper radial blur, but it produces a similar visual effect.
 An example of patches transformed using the outlined procedure can be found in figure \ref{fig:blur}.
 \begin{figure}
-    \begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
+    %\begin{adjustwidth}{-0.2\textwidth}{-0.2\textwidth}
     \centering
-    \includegraphics[scale=0.4]{figs/blur}
-    \end{adjustwidth}
+    \includegraphics[width=\textwidth]{figs/blur}
+    %\end{adjustwidth}
     \caption{
         Examples of radially blurred patches extracted from an image.
         \label{fig:blur}
@@ -423,20 +434,6 @@ The black-box DE model is denoted $f$.
 A copy of $f$ is used and denoted $\hat{f}$, this will undergo the fine-tuning stage while $f$ is frozen.
 Let's call $\hat{\mathbf{Z}}_{0}, \hat{\mathbf{Z}}_{1}, \hat{\mathbf{Z}}_{2}, \dotsc, \hat{\mathbf{Z}}_{N}$ its predictions on the considered patches.
 
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.3]{figs/fusion}
-    \caption{
-        A qualitative example of what could look like the depth fusion pipeline.
-        Left: original images from KITTI and their ground truth overlaid.
-        Center: predictions from full-image model.
-        Right: stitching of partial predictions from patch-model.
-        No strategy was developed for dealing with corner-less regions, hence the final result doesn't cover the whole image.
-        Visible artifacts are present because of the way differentiable warping was dealt with.
-        \label{fig:fusion}
-    }
-\end{figure}
-
 To make \textit{all} the partial predictions agree on the overlapping regions is a first approach.
 The following loss could be minimized:
 \[
@@ -456,10 +453,6 @@ Where $\mathbf{W}_{n}$ is a weight mask, as used in the weighted scale-invariant
 $\mathbf{W}_{n}(p)$ is a measure of how much the model \textit{should} be confident about the prediction in $p$.
 Pixels with high confidence contribute less to the loss.
 The first term of the loss encourages different depth maps to agree on the overlapping regions, while the second one avoids the network to completely forget its initial prediction and degenerating into a constant solution. 
-As an example, a baseline model was trained on KITTI following \cite{Eigen} and its full-image output was qualitatively compared to a partial depth map obtained with the outlined inference procedure (1 epoch of tuning).
-The model used in the inference procedure was trained patch-wise with the various simplifications discussed in the previous section.
-During inference, patches are treated analogously.
-Figure \ref{fig:fusion} shows the result.
 
 \vspace{0.5cm}
 
@@ -473,7 +466,7 @@ Or, some could be iteratively removed from the whole set (backward selection).
 
 \begin{figure}
     \centering
-    \includegraphics[scale=0.3]{figs/fusion_boxes}
+    \includegraphics[width=\textwidth]{figs/fusion_boxes}
     \caption{
         Top-left: the first patch is chosen and depth is predicted (transparent green).
         Top-right: candidates for the next patch are evaluated, the green box is chosen.
